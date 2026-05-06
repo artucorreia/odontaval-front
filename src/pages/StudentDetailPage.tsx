@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Card, Button, Typography, Tag, Avatar, Descriptions, Breadcrumb, Spin, Alert } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeftOutlined, PlusOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { fetchStudentDashboardData } from '../services/studentDashboardService';
 import type { StudentDashboardData } from '../types/studentDashboard';
 import StudentOverviewCards from '../components/student-dashboard/StudentOverviewCards';
@@ -57,19 +57,9 @@ export default function StudentDetailPage() {
             Detalhes do Aluno
           </Title>
         </div>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          style={{ background: '#6C5CE7', borderColor: '#6C5CE7', borderRadius: 8 }}
-          onClick={() => navigate('/avaliacoes/nova')}
-        >
-          Nova Avaliação
-        </Button>
       </div>
 
-      {error && (
-        <Alert type="error" message={error} style={{ marginBottom: 16 }} showIcon />
-      )}
+      {error && <Alert type="error" message={error} style={{ marginBottom: 16 }} showIcon />}
 
       {data?.usedMock && !error && (
         <Alert
@@ -92,10 +82,7 @@ export default function StudentDetailPage() {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             <Card style={{ borderRadius: 12, border: '1px solid #f0f0f0' }}>
               <div className="text-center mb-4">
-                <Avatar
-                  style={{ background: '#6C5CE7', fontSize: 24, fontWeight: 700 }}
-                  size={72}
-                >
+                <Avatar style={{ background: '#6C5CE7', fontSize: 24, fontWeight: 700 }} size={72}>
                   {initials}
                 </Avatar>
                 <Title level={4} style={{ margin: '12px 0 4px', color: '#2D3436' }}>

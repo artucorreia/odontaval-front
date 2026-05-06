@@ -14,8 +14,9 @@ import {
   Popconfirm,
   message,
 } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import ResponsiveTable from '../components/ResponsiveTable';
-import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, BarChartOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { MOCK_EXAMS, MOCK_SPECIALISMS } from '../utils/mockData';
 import type { Exam } from '../types';
@@ -24,6 +25,7 @@ const { Title, Text } = Typography;
 const { TextArea } = Input;
 
 export default function ExamsPage() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [exams, setExams] = useState<Exam[]>(MOCK_EXAMS);
   const [modal, setModal] = useState(false);
@@ -98,6 +100,13 @@ export default function ExamsPage() {
       align: 'right',
       render: (_, r) => (
         <Space>
+          <Tooltip title="Ver Dashboard">
+            <Button
+              type="text"
+              icon={<BarChartOutlined style={{ color: '#6C5CE7' }} />}
+              onClick={() => navigate(`/exames/${r.id}`)}
+            />
+          </Tooltip>
           <Tooltip title="Editar">
             <Button type="text" icon={<EditOutlined style={{ color: '#636E72' }} />} />
           </Tooltip>

@@ -8,10 +8,9 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import StudentsPage from './pages/StudentsPage';
 import StudentDetailPage from './pages/StudentDetailPage';
-import EvaluationsPage from './pages/EvaluationsPage';
-import NewEvaluationPage from './pages/NewEvaluationPage';
 import EvaluationDetailPage from './pages/EvaluationDetailPage';
 import ExamsPage from './pages/ExamsPage';
+import ExamDetailPage from './pages/ExamDetailPage';
 import AgendaPage from './pages/AgendaPage';
 import ReportsPage from './pages/ReportsPage';
 
@@ -44,11 +43,10 @@ export default function App() {
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="alunos" element={<StudentsPage />} />
               <Route path="alunos/:id" element={<StudentDetailPage />} />
-              <Route path="avaliacoes" element={<EvaluationsPage />} />
-              <Route path="avaliacoes/nova" element={<NewEvaluationPage />} />
+              {/* Evaluation detail remains accessible for deep links (e.g., from student history) */}
               <Route path="avaliacoes/:id" element={<EvaluationDetailPage />} />
-              <Route path="avaliacoes/:id/editar" element={<NewEvaluationPage />} />
               <Route path="exames" element={<ExamsPage />} />
+              <Route path="exames/:id" element={<ExamDetailPage />} />
               <Route path="agenda" element={<AgendaPage />} />
               <Route path="relatorios" element={<ReportsPage />} />
             </Route>

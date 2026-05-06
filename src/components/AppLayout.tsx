@@ -3,7 +3,6 @@ import { Layout, Menu, Avatar, Dropdown, Badge, Button, Space } from 'antd';
 import {
   DashboardOutlined,
   TeamOutlined,
-  FileTextOutlined,
   CalendarOutlined,
   BarChartOutlined,
   LogoutOutlined,
@@ -22,7 +21,6 @@ const { Sider, Header, Content } = Layout;
 const menuItems = [
   { key: '/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
   { key: '/alunos', icon: <TeamOutlined />, label: 'Alunos' },
-  { key: '/avaliacoes', icon: <FileTextOutlined />, label: 'Avaliações' },
   { key: '/exames', icon: <MedicineBoxOutlined />, label: 'Exames' },
   { key: '/agenda', icon: <CalendarOutlined />, label: 'Agenda' },
   { key: '/relatorios', icon: <BarChartOutlined />, label: 'Relatórios' },
