@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #6c5ce7;
+  --color-primary-dark: #4834d4;
+  --color-primary-light: #a29bfe;
+  --color-secondary: #2d3436;
+  --color-accent: #00b894;
+  --color-danger: #e17055;
+  --color-surface: #f5f6fa;
+  --color-muted: #636e72;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #f5f6fa;
+  color: #2d3436;
+}
+
+/* Ant Design overrides */
+.ant-btn-primary {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
+.ant-btn-primary:hover {
+  background-color: var(--color-primary-dark) !important;
+  border-color: var(--color-primary-dark) !important;
+}
+
+.ant-menu-item-selected {
+  background-color: #ede9fe !important;
+  color: var(--color-primary) !important;
+}
+
+.ant-menu-item-selected .ant-menu-item-icon,
+.ant-menu-item-selected span {
+  color: var(--color-primary) !important;
+}
+
+.ant-layout-sider {
+  background: #fff !important;
+}
+
+.ant-menu-light {
+  background: #fff !important;
+}
+
+.logo-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.logo-brand .brand-name {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--color-primary);
+  letter-spacing: 1px;
+}
+
+.stat-card {
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(108, 92, 231, 0.12) !important;
+}
+
+.evaluation-score {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.ant-table-thead > tr > th {
+  background: #f8f7ff !important;
+  color: var(--color-secondary) !important;
+  font-weight: 600 !important;
+}
+
+.ant-pagination-item-active {
+  border-color: var(--color-primary) !important;
+}
+
+.ant-pagination-item-active a {
+  color: var(--color-primary) !important;
+}
+
+.ant-input:focus,
+.ant-input-affix-wrapper:focus,
+.ant-input-affix-wrapper-focused {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.1) !important;
+}
+
+.ant-select-focused .ant-select-selector {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.1) !important;
+}
+
+.tag-role-professor {
+  background: #ede9fe;
+  color: var(--color-primary);
+  border-color: #c4b5fd;
+}
+
+.tag-role-aluno {
+  background: #d1fae5;
+  color: #065f46;
+  border-color: #6ee7b7;
+}
+
+.tag-role-admin {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fcd34d;
+}
