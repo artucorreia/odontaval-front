@@ -1,6 +1,6 @@
 import { Card, Button, Typography, Tag, Avatar, Descriptions, Breadcrumb } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeftOutlined, PlusOutlined, EditOutlined, CalendarOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, PlusOutlined, CalendarOutlined } from '@ant-design/icons';
 import { MOCK_STUDENTS, MOCK_EVALUATIONS } from '../utils/mockData';
 
 const { Title } = Typography;
@@ -62,9 +62,6 @@ export default function StudentDetailPage() {
             <Descriptions.Item label="Avaliações">{evaluations.length}</Descriptions.Item>
           </Descriptions>
 
-          <Button icon={<EditOutlined />} block style={{ marginTop: 16, borderRadius: 8 }}>
-            Editar Aluno
-          </Button>
         </Card>
 
         {/* Evaluations History */}
