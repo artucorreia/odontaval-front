@@ -16,7 +16,7 @@ export default function ProfessorRoute({ children }: { children: React.ReactNode
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 
-  if (hasRole('ALUNO')) return <Navigate to="/alunos/me" replace />;
+  if (hasRole('STUDENT')) return <Navigate to="/alunos/me" replace />;
 
   return <>{children}</>;
 }

@@ -16,7 +16,7 @@ export default function StudentRoute({ children }: { children: React.ReactNode }
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 
-  if (!hasRole('ALUNO')) return <Navigate to="/dashboard" replace />;
+  if (!hasRole('STUDENT')) return <Navigate to="/dashboard" replace />;
 
   return <>{children}</>;
 }

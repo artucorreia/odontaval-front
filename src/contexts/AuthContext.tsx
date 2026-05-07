@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import type { User } from '../types';
 
-type UserRole = 'PROFESSOR' | 'ALUNO';
+type UserRole = 'PROFESSOR' | 'STUDENT';
 
 interface AuthContextType {
   user: User | null;
@@ -26,11 +26,11 @@ const MOCK_STUDENT: User = {
   id: 'stu-001',
   name: 'Maria Souza',
   email: 'maria.souza@aluno.edu',
-  roles: [{ id: 3, name: 'ALUNO' }],
+  roles: [{ id: 3, name: 'STUDENT' }],
 };
 
 function buildMockUser(userId: string, role: UserRole): User {
-  const base = role === 'ALUNO' ? MOCK_STUDENT : MOCK_PROFESSOR;
+  const base = role === 'STUDENT' ? MOCK_STUDENT : MOCK_PROFESSOR;
   return { ...base, id: userId };
 }
 
@@ -42,7 +42,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
     const storedUserId = localStorage.getItem('userId');
-    const storedRole = (localStorage.getItem('userRole') as UserRole) ?? 'PROFESSOR';
+    const stored = localStorage.getItem('userRole');
+    const storedRole: UserRole = stored === 'STUDENT' ? 'STUDENT' : 'PROFESSOR';
     if (storedToken && storedUserId) {
       setToken(storedToken);
       setUser(buildMockUser(storedUserId, storedRole));
