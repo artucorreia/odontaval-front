@@ -122,9 +122,6 @@ export const evaluationService = {
 export const userService = {
   findAll: (role?: string) => api.get('/api/v1/users', { params: role ? { role } : {} }),
   findById: (id: string) => api.get(`/api/v1/users/${id}`),
-  update: (id: string, data: { name?: string; email?: string }) =>
-    api.put(`/api/v1/users/${id}`, data),
-  delete: (id: string) => api.delete(`/api/v1/users/${id}`),
 };
 
 // GET /api/v1/dashboard/stats

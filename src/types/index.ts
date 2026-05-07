@@ -8,7 +8,7 @@ export interface User {
 
 export interface Role {
   id: number;
-  name: 'ADMIN' | 'PROFESSOR' | 'ALUNO';
+  name: 'ADMIN' | 'PROFESSOR' | 'STUDENT';
 }
 
 export interface Specialism {
@@ -55,6 +55,10 @@ export interface AuthResponse {
   data: {
     userId: string;
     token: string;
+    role: {
+      id: number;
+      name: string;
+    };
   };
 }
 

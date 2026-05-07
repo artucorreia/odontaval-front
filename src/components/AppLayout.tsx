@@ -1,16 +1,13 @@
 import { useState } from 'react';
-import { Layout, Menu, Avatar, Dropdown, Badge, Button, Space } from 'antd';
+import { Layout, Menu, Avatar, Dropdown, Button, Space } from 'antd';
 import {
   DashboardOutlined,
   TeamOutlined,
-  FileTextOutlined,
   CalendarOutlined,
   BarChartOutlined,
   LogoutOutlined,
-  BellOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  UserOutlined,
   MedicineBoxOutlined,
 } from '@ant-design/icons';
 import { useLocation, useNavigate, Outlet } from 'react-router-dom';
@@ -22,7 +19,6 @@ const { Sider, Header, Content } = Layout;
 const menuItems = [
   { key: '/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
   { key: '/alunos', icon: <TeamOutlined />, label: 'Alunos' },
-  { key: '/avaliacoes', icon: <FileTextOutlined />, label: 'Avaliações' },
   { key: '/exames', icon: <MedicineBoxOutlined />, label: 'Exames' },
   { key: '/agenda', icon: <CalendarOutlined />, label: 'Agenda' },
   { key: '/relatorios', icon: <BarChartOutlined />, label: 'Relatórios' },
@@ -34,10 +30,7 @@ export default function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const userMenuItems = [
-    { key: 'profile', icon: <UserOutlined />, label: 'Perfil' },
-    { key: 'logout', icon: <LogoutOutlined />, label: 'Sair', danger: true },
-  ];
+  const userMenuItems = [{ key: 'logout', icon: <LogoutOutlined />, label: 'Sair', danger: true }];
 
   const handleUserMenu = ({ key }: { key: string }) => {
     if (key === 'logout') {
@@ -52,10 +45,6 @@ export default function AppLayout() {
       .slice(0, 2)
       .map((n) => n[0])
       .join('') ?? 'U';
-
-  const roleName = user?.roles?.[0]?.name;
-  const roleLabel =
-    roleName === 'PROFESSOR' ? 'Odontólogo' : roleName === 'ADMIN' ? 'Administrador' : 'Aluno';
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -140,10 +129,6 @@ export default function AppLayout() {
           />
 
           <Space size={16}>
-            <Badge count={3} size="small">
-              <Button type="text" icon={<BellOutlined style={{ fontSize: 18 }} />} />
-            </Badge>
-
             <Dropdown
               menu={{ items: userMenuItems, onClick: handleUserMenu }}
               placement="bottomRight"
@@ -156,7 +141,6 @@ export default function AppLayout() {
                   <div className="text-sm font-semibold text-secondary leading-tight">
                     {user?.name}
                   </div>
-                  <div className="text-xs text-muted">{roleLabel}</div>
                 </div>
               </div>
             </Dropdown>

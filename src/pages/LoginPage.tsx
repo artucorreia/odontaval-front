@@ -15,15 +15,13 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const res = await authService.login(values.email, values.password);
-      const { token, userId } = res.data.data;
-      login(token, userId);
+      const { token, userId, role } = res.data.data;
+      const roleName = role.name as 'PROFESSOR' | 'STUDENT';
+      login(token, userId, roleName);
       message.success('Login realizado com sucesso!');
-      navigate('/dashboard');
+      navigate(roleName === 'STUDENT' ? '/alunos/me' : '/dashboard');
     } catch {
-      // Demo mode: accept any credentials
-      login('demo-token-123', 'e6f16904-fa64-422a-86f0-1aba11d768f7');
-      message.success('Login realizado com sucesso!');
-      navigate('/dashboard');
+      message.error('E-mail ou senha inválidos.');
     } finally {
       setLoading(false);
     }

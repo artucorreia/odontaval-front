@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import {
   Card,
-  Table,
   Button,
   Input,
   Space,
@@ -11,6 +10,7 @@ import {
   Popconfirm,
   message,
 } from 'antd';
+import ResponsiveTable from '../components/ResponsiveTable';
 import {
   PlusOutlined,
   SearchOutlined,
@@ -178,7 +178,7 @@ export default function EvaluationsPage() {
             style={{ maxWidth: 400, borderRadius: 8 }}
           />
         </div>
-        <Table
+        <ResponsiveTable
           columns={columns}
           dataSource={filtered}
           rowKey="id"
