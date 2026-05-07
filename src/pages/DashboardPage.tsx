@@ -1,20 +1,20 @@
-import React from 'react';
-import { Card, Row, Col, Typography, Button, Avatar, List } from 'antd';
+import { useEffect, useState } from 'react';
+import { Card, Row, Col, Typography, Button, Avatar, List, Spin, Tag } from 'antd';
 import {
   TeamOutlined,
   FileTextOutlined,
   CalendarOutlined,
   ArrowUpOutlined,
-  ExclamationCircleOutlined,
   RightOutlined,
   UserOutlined,
-  EditOutlined,
-  PlusOutlined,
   BarChartOutlined,
+  ExperimentOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { MOCK_DASHBOARD_STATS, MOCK_ACTIVITY, MOCK_UPCOMING } from '../utils/mockData';
+import { examService } from '../services/api';
+import type { Exam } from '../types';
+import { MOCK_DASHBOARD_STATS, MOCK_EXAMS } from '../utils/mockData';
 
 const { Title, Text } = Typography;
 
@@ -25,6 +25,7 @@ const statCards = [
     delta: `+${MOCK_DASHBOARD_STATS.studentsThisMonth} este mês`,
     icon: <TeamOutlined style={{ fontSize: 22, color: '#6C5CE7' }} />,
     bg: '#ede9fe',
+    isLink: false,
   },
   {
     label: 'Avaliações Realizadas',
@@ -32,42 +33,50 @@ const statCards = [
     delta: `+${MOCK_DASHBOARD_STATS.evaluationsThisMonth} este mês`,
     icon: <FileTextOutlined style={{ fontSize: 22, color: '#00B894' }} />,
     bg: '#d1fae5',
+    isLink: false,
   },
   {
     label: 'Exames Hoje',
     value: MOCK_DASHBOARD_STATS.todayExams,
-    delta: 'Ver agenda',
-    isLink: true,
+    delta: 'Ver exames',
     icon: <CalendarOutlined style={{ fontSize: 22, color: '#0984e3' }} />,
     bg: '#dbeafe',
-  },
-  {
-    label: 'Pendências',
-    value: MOCK_DASHBOARD_STATS.pendingEvaluations,
-    delta: 'Ver pendências',
-    isAlert: true,
     isLink: true,
-    icon: <ExclamationCircleOutlined style={{ fontSize: 22, color: '#E17055' }} />,
-    bg: '#fee2e2',
   },
 ];
-
-const activityIconMap: Record<string, React.ReactNode> = {
-  evaluation: <FileTextOutlined style={{ color: '#6C5CE7' }} />,
-  evaluation_update: <EditOutlined style={{ color: '#0984e3' }} />,
-  student: <UserOutlined style={{ color: '#00B894' }} />,
-  report: <BarChartOutlined style={{ color: '#636E72' }} />,
-};
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [recentExams, setRecentExams] = useState<Exam[]>([]);
+  const [loadingExams, setLoadingExams] = useState(true);
 
   const firstName = user?.name?.split(' ')[0] ?? 'Usuário';
 
+  useEffect(() => {
+    examService
+      .findAll()
+      .then((res) => {
+        const exams: Exam[] = res.data?.data ?? [];
+        if (exams.length === 0) throw new Error('empty');
+        setRecentExams(
+          [...exams]
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .slice(0, 5),
+        );
+      })
+      .catch(() =>
+        setRecentExams(
+          [...MOCK_EXAMS]
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .slice(0, 5),
+        ),
+      )
+      .finally(() => setLoadingExams(false));
+  }, []);
+
   return (
     <div>
-      {/* Header */}
       <div className="mb-6">
         <Title level={2} style={{ margin: 0, color: '#2D3436', fontWeight: 700 }}>
           Dashboard
@@ -75,10 +84,9 @@ export default function DashboardPage() {
         <Text style={{ color: '#636E72' }}>Bem-vindo(a) de volta, {firstName}!</Text>
       </div>
 
-      {/* Stats */}
-      <Row gutter={[16, 16]} className="mb-6">
+      <Row gutter={[16, 16]} className="mb-4">
         {statCards.map((card, i) => (
-          <Col xs={24} sm={12} lg={6} key={i}>
+          <Col xs={24} sm={8} key={i}>
             <Card
               className="stat-card"
               style={{ borderRadius: 12, border: '1px solid #f0f0f0' }}
@@ -101,8 +109,8 @@ export default function DashboardPage() {
                   {card.isLink ? (
                     <a
                       className="text-xs mt-1 block"
-                      style={{ color: card.isAlert ? '#E17055' : '#6C5CE7' }}
-                      onClick={() => navigate(card.isAlert ? '/avaliacoes' : '/agenda')}
+                      style={{ color: '#6C5CE7' }}
+                      onClick={() => navigate('/exames')}
                     >
                       {card.delta}
                     </a>
@@ -132,51 +140,10 @@ export default function DashboardPage() {
         ))}
       </Row>
 
-      {/* Activity + Schedule */}
       <Row gutter={[16, 16]}>
-        <Col xs={24} lg={14}>
+        <Col xs={24} lg={16}>
           <Card
-            title={<span className="font-semibold text-secondary">Atividades Recentes</span>}
-            style={{ borderRadius: 12, border: '1px solid #f0f0f0' }}
-            bodyStyle={{ padding: 0 }}
-          >
-            <List
-              dataSource={MOCK_ACTIVITY}
-              renderItem={(item) => (
-                <List.Item
-                  style={{ padding: '14px 24px', borderBottom: '1px solid #f9f9f9' }}
-                  actions={[
-                    <Button
-                      size="small"
-                      style={{ borderColor: '#6C5CE7', color: '#6C5CE7', borderRadius: 6 }}
-                      onClick={() => navigate('/avaliacoes')}
-                    >
-                      Ver
-                    </Button>,
-                  ]}
-                >
-                  <List.Item.Meta
-                    avatar={
-                      <Avatar
-                        style={{ background: '#ede9fe' }}
-                        icon={activityIconMap[item.type]}
-                        size={38}
-                      />
-                    }
-                    title={<Text style={{ fontSize: 13.5, color: '#2D3436' }}>{item.message}</Text>}
-                    description={
-                      <Text style={{ fontSize: 12, color: '#636E72' }}>{item.time}</Text>
-                    }
-                  />
-                </List.Item>
-              )}
-            />
-          </Card>
-        </Col>
-
-        <Col xs={24} lg={10}>
-          <Card
-            title={<span className="font-semibold text-secondary">Próximos Compromissos</span>}
+            title={<span className="font-semibold text-secondary">Exames Recentes</span>}
             style={{ borderRadius: 12, border: '1px solid #f0f0f0' }}
             bodyStyle={{ padding: 0 }}
             extra={
@@ -184,55 +151,88 @@ export default function DashboardPage() {
                 type="link"
                 size="small"
                 style={{ color: '#6C5CE7', padding: 0 }}
-                onClick={() => navigate('/agenda')}
+                onClick={() => navigate('/exames')}
               >
-                Ver agenda completa <RightOutlined />
+                Ver todos <RightOutlined />
               </Button>
             }
           >
-            <List
-              dataSource={MOCK_UPCOMING}
-              renderItem={(item) => (
-                <List.Item style={{ padding: '14px 24px', borderBottom: '1px solid #f9f9f9' }}>
-                  <div className="flex items-center gap-4 w-full">
-                    <div
-                      style={{
-                        fontWeight: 600,
-                        color: '#6C5CE7',
-                        fontSize: 14,
-                        minWidth: 52,
-                      }}
-                    >
-                      {item.time}
-                    </div>
-                    <div
-                      style={{
-                        flex: 1,
-                        borderLeft: '2px solid #ede9fe',
-                        paddingLeft: 12,
-                        color: '#2D3436',
-                        fontSize: 14,
-                      }}
-                    >
-                      {item.student}
-                    </div>
-                  </div>
-                </List.Item>
-              )}
-            />
+            {loadingExams ? (
+              <div className="flex justify-center py-8">
+                <Spin />
+              </div>
+            ) : (
+              <List
+                dataSource={recentExams}
+                locale={{ emptyText: 'Nenhum exame encontrado' }}
+                renderItem={(exam) => (
+                  <List.Item
+                    style={{
+                      padding: '14px 24px',
+                      borderBottom: '1px solid #f9f9f9',
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => navigate(`/exames/${exam.id}`)}
+                    actions={[
+                      <Button
+                        size="small"
+                        style={{ borderColor: '#6C5CE7', color: '#6C5CE7', borderRadius: 6 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/exames/${exam.id}`);
+                        }}
+                      >
+                        Ver
+                      </Button>,
+                    ]}
+                  >
+                    <List.Item.Meta
+                      avatar={
+                        <Avatar
+                          style={{ background: '#ede9fe' }}
+                          icon={<ExperimentOutlined style={{ color: '#6C5CE7' }} />}
+                          size={38}
+                        />
+                      }
+                      title={
+                        <Text style={{ fontSize: 13.5, color: '#2D3436', fontWeight: 600 }}>
+                          {exam.title}
+                        </Text>
+                      }
+                      description={
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Text style={{ fontSize: 12, color: '#636E72' }}>
+                            {new Date(exam.date + 'T12:00:00').toLocaleDateString('pt-BR')}
+                          </Text>
+                          {exam.academicSemester && (
+                            <Tag color="purple" style={{ fontSize: 11, borderRadius: 4 }}>
+                              {exam.academicSemester}
+                            </Tag>
+                          )}
+                        </div>
+                      }
+                    />
+                  </List.Item>
+                )}
+              />
+            )}
           </Card>
+        </Col>
 
-          {/* Quick actions */}
+        <Col xs={24} lg={8}>
           <Card
-            style={{ borderRadius: 12, border: '1px solid #f0f0f0', marginTop: 16 }}
-            bodyStyle={{ padding: '16px 24px' }}
+            style={{ borderRadius: 12, border: '1px solid #f0f0f0', height: '100%' }}
+            bodyStyle={{ padding: '20px 24px' }}
           >
-            <Text className="font-semibold text-secondary block mb-3">Ações Rápidas</Text>
-            <div className="flex flex-col gap-2">
+            <Text className="font-semibold text-secondary block mb-4" style={{ fontSize: 15 }}>
+              Ações Rápidas
+            </Text>
+            <div className="flex flex-col gap-3">
               <Button
                 type="primary"
-                icon={<PlusOutlined />}
+                icon={<ExperimentOutlined />}
                 block
+                size="large"
                 style={{ background: '#6C5CE7', borderColor: '#6C5CE7', borderRadius: 8 }}
                 onClick={() => navigate('/exames')}
               >
@@ -241,6 +241,7 @@ export default function DashboardPage() {
               <Button
                 icon={<UserOutlined />}
                 block
+                size="large"
                 style={{ borderRadius: 8 }}
                 onClick={() => navigate('/alunos')}
               >
@@ -249,6 +250,7 @@ export default function DashboardPage() {
               <Button
                 icon={<BarChartOutlined />}
                 block
+                size="large"
                 style={{ borderRadius: 8 }}
                 onClick={() => navigate('/relatorios')}
               >
