@@ -234,9 +234,9 @@ export default function DashboardPage() {
                 icon={<PlusOutlined />}
                 block
                 style={{ background: '#6C5CE7', borderColor: '#6C5CE7', borderRadius: 8 }}
-                onClick={() => navigate('/avaliacoes/nova')}
+                onClick={() => navigate('/exames')}
               >
-                Nova Avaliação
+                Ir para Exames
               </Button>
               <Button
                 icon={<UserOutlined />}
