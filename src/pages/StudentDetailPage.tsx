@@ -132,7 +132,7 @@ export default function StudentDetailPage() {
           )}
 
           {/* History Table */}
-          {data && <StudentEvaluationTable data={data.enrichedEvals} />}
+          {data && <StudentEvaluationTable data={data.enrichedEvals} studentName={student?.name} />}
         </div>
       )}
     </div>

@@ -71,7 +71,12 @@ export default function EvaluationDetailsModal({ evaluation, exam, open, onClose
                 ? new Date(exam.date + 'T12:00:00').toLocaleDateString('pt-BR')
                 : '—'}
             </Descriptions.Item>
-            <Descriptions.Item label="Semestre">{exam.academicSemester}</Descriptions.Item>
+            {exam.academicSemester && (
+              <Descriptions.Item label="Semestre">{exam.academicSemester}</Descriptions.Item>
+            )}
+            {exam.professor?.name && (
+              <Descriptions.Item label="Professor">{exam.professor.name}</Descriptions.Item>
+            )}
           </>
         )}
       </Descriptions>
