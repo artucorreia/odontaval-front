@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Card, Button, Typography, Tag, Avatar, Descriptions, Breadcrumb, Spin, Alert } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeftOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { useAuth } from '../contexts/AuthContext';
 import { fetchStudentDashboardData } from '../services/studentDashboardService';
 import type { StudentDashboardData } from '../types/studentDashboard';
 import StudentOverviewCards from '../components/student-dashboard/StudentOverviewCards';
@@ -14,7 +15,10 @@ import StudentEvaluationTable from '../components/student-dashboard/StudentEvalu
 const { Title } = Typography;
 
 export default function StudentDetailPage() {
-  const { id } = useParams<{ id: string }>();
+  const { id: paramId } = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const id = paramId ?? user?.id;
+  const isSelfView = !paramId;
   const navigate = useNavigate();
 
   const [data, setData] = useState<StudentDashboardData | null>(null);
@@ -42,19 +46,23 @@ export default function StudentDetailPage() {
 
   return (
     <div>
-      <Breadcrumb
-        items={[
-          { title: <a onClick={() => navigate('/alunos')}>Alunos</a> },
-          { title: student?.name ?? 'Detalhes' },
-        ]}
-        style={{ marginBottom: 16 }}
-      />
+      {!isSelfView && (
+        <Breadcrumb
+          items={[
+            { title: <a onClick={() => navigate('/alunos')}>Alunos</a> },
+            { title: student?.name ?? 'Detalhes' },
+          ]}
+          style={{ marginBottom: 16 }}
+        />
+      )}
 
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/alunos')} />
+          {!isSelfView && (
+            <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/alunos')} />
+          )}
           <Title level={2} style={{ margin: 0, fontWeight: 700, color: '#2D3436' }}>
-            Detalhes do Aluno
+            {isSelfView ? 'Meu Desempenho' : 'Detalhes do Aluno'}
           </Title>
         </div>
       </div>

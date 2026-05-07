@@ -1,25 +1,38 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import type { User } from '../types';
 
+type UserRole = 'PROFESSOR' | 'ALUNO';
+
 interface AuthContextType {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (token: string, userId: string) => void;
+  login: (token: string, userId: string, role?: UserRole) => void;
   logout: () => void;
   hasRole: (role: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-// Mock user data - in production this would come from /api/v1/users/:id
-const MOCK_USER: User = {
+const MOCK_PROFESSOR: User = {
   id: 'e6f16904-fa64-422a-86f0-1aba11d768f7',
   name: 'Dr. João Silva',
   email: 'joao.silva@odontaval.com',
-  roles: [{ id: 1, name: 'PROFESSOR' }],
+  roles: [{ id: 2, name: 'PROFESSOR' }],
 };
+
+const MOCK_STUDENT: User = {
+  id: 'stu-001',
+  name: 'Maria Souza',
+  email: 'maria.souza@aluno.edu',
+  roles: [{ id: 3, name: 'ALUNO' }],
+};
+
+function buildMockUser(userId: string, role: UserRole): User {
+  const base = role === 'ALUNO' ? MOCK_STUDENT : MOCK_PROFESSOR;
+  return { ...base, id: userId };
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -29,43 +42,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
     const storedUserId = localStorage.getItem('userId');
+    const storedRole = (localStorage.getItem('userRole') as UserRole) ?? 'PROFESSOR';
     if (storedToken && storedUserId) {
       setToken(storedToken);
-      // In production: fetch user from API
-      setUser(MOCK_USER);
+      setUser(buildMockUser(storedUserId, storedRole));
     }
     setIsLoading(false);
   }, []);
 
-  const login = (newToken: string, userId: string) => {
+  const login = (newToken: string, userId: string, role: UserRole = 'PROFESSOR') => {
     localStorage.setItem('token', newToken);
     localStorage.setItem('userId', userId);
+    localStorage.setItem('userRole', role);
     setToken(newToken);
-    setUser({ ...MOCK_USER, id: userId });
+    setUser(buildMockUser(userId, role));
   };
 
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
+    localStorage.removeItem('userRole');
     setToken(null);
     setUser(null);
   };
 
-  const hasRole = (role: string) => {
-    return user?.roles?.some((r) => r.name === role) ?? false;
-  };
+  const hasRole = (role: string) => user?.roles?.some((r) => r.name === role) ?? false;
 
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        token,
-        isAuthenticated: !!token && !!user,
-        isLoading,
-        login,
-        logout,
-        hasRole,
-      }}
+      value={{ user, token, isAuthenticated: !!token && !!user, isLoading, login, logout, hasRole }}
     >
       {children}
     </AuthContext.Provider>

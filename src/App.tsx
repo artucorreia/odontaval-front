@@ -3,7 +3,10 @@ import { ConfigProvider } from 'antd';
 import ptBR from 'antd/locale/pt_BR';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import ProfessorRoute from './components/ProfessorRoute';
+import StudentRoute from './components/StudentRoute';
 import AppLayout from './components/AppLayout';
+import StudentLayout from './components/StudentLayout';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import StudentsPage from './pages/StudentsPage';
@@ -30,11 +33,15 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+
+            {/* Professor area — full layout, blocked for ALUNO */}
             <Route
               path="/"
               element={
                 <ProtectedRoute>
-                  <AppLayout />
+                  <ProfessorRoute>
+                    <AppLayout />
+                  </ProfessorRoute>
                 </ProtectedRoute>
               }
             >
@@ -47,6 +54,21 @@ export default function App() {
               <Route path="agenda" element={<AgendaPage />} />
               <Route path="relatorios" element={<ReportsPage />} />
             </Route>
+
+            {/* Student area — minimal layout, blocked for PROFESSOR */}
+            <Route
+              path="/alunos/me"
+              element={
+                <ProtectedRoute>
+                  <StudentRoute>
+                    <StudentLayout />
+                  </StudentRoute>
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<StudentDetailPage />} />
+            </Route>
+
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </BrowserRouter>

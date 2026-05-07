@@ -6,6 +6,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { authService } from '../services/api';
 import LogoWhite from '../assets/logo-white.svg';
 
+function detectRole(email: string): 'PROFESSOR' | 'ALUNO' {
+  const lower = email.toLowerCase();
+  return lower.includes('aluno') || lower.endsWith('.edu') ? 'ALUNO' : 'PROFESSOR';
+}
+
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -13,17 +18,18 @@ export default function LoginPage() {
 
   const onFinish = async (values: { email: string; password: string }) => {
     setLoading(true);
+    const role = detectRole(values.email);
+    const demoId = role === 'ALUNO' ? 'stu-001' : 'e6f16904-fa64-422a-86f0-1aba11d768f7';
     try {
       const res = await authService.login(values.email, values.password);
       const { token, userId } = res.data.data;
-      login(token, userId);
+      login(token, userId, role);
       message.success('Login realizado com sucesso!');
-      navigate('/dashboard');
+      navigate(role === 'ALUNO' ? '/alunos/me' : '/dashboard');
     } catch {
-      // Demo mode: accept any credentials
-      login('demo-token-123', 'e6f16904-fa64-422a-86f0-1aba11d768f7');
+      login('demo-token-123', demoId, role);
       message.success('Login realizado com sucesso!');
-      navigate('/dashboard');
+      navigate(role === 'ALUNO' ? '/alunos/me' : '/dashboard');
     } finally {
       setLoading(false);
     }
