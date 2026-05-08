@@ -65,13 +65,6 @@ export default function StudentDetailPage() {
       : data.enrichedEvals.filter((e) => e.academicSemester === activeSemester);
   }, [data, activeSemester]);
 
-  const filteredAllEvals = useMemo(() => {
-    if (!data) return [];
-    return activeSemester === SEMESTER_ALL
-      ? data.allEnrichedEvals
-      : data.allEnrichedEvals.filter((e) => e.academicSemester === activeSemester);
-  }, [data, activeSemester]);
-
   // ── re-computed stats for the active semester ─────────────────────────────
 
   const displayStats = useMemo(
@@ -91,8 +84,8 @@ export default function StudentDetailPage() {
     [filteredStudentEvals],
   );
   const displayComparison = useMemo(
-    () => computeClassComparison(filteredStudentEvals, filteredAllEvals, id ?? ''),
-    [filteredStudentEvals, filteredAllEvals, id],
+    () => data ? computeClassComparison(filteredStudentEvals, data.classAverages) : [],
+    [filteredStudentEvals, data],
   );
   const displayPeriods = useMemo(
     () => computePeriodStats(filteredStudentEvals),

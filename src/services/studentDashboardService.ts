@@ -1,4 +1,4 @@
-import { evaluationService, userService } from './api';
+import { evaluationService, userService, dashboardService } from './api';
 import type { Evaluation } from '../types';
 import type {
   EnrichedEvaluation,
@@ -10,6 +10,7 @@ import type {
   ComparisonDatum,
   PeriodStats,
   CriterionKey,
+  ClassAverages,
 } from '../types/studentDashboard';
 import { CRITERIA_LABELS } from '../types/studentDashboard';
 
@@ -120,22 +121,14 @@ export function computeSpecialtyData(evals: EnrichedEvaluation[]): SpecialtyDatu
 
 export function computeClassComparison(
   studentEvals: EnrichedEvaluation[],
-  allEvals: EnrichedEvaluation[],
-  studentId: string,
+  classAverages: ClassAverages,
 ): ComparisonDatum[] {
   if (studentEvals.length === 0) return [];
-  const otherEvals = allEvals.filter((e) => e.studentId !== studentId);
-
   return (Object.keys(CRITERIA_LABELS) as CriterionKey[]).map((key) => ({
     criterion: key,
     label: CRITERIA_LABELS[key],
     student: round1(10 + avg(studentEvals.map((e) => getCriterionValue(e, key)))),
-    turma: round1(
-      10 +
-        (otherEvals.length > 0
-          ? avg(otherEvals.map((e) => getCriterionValue(e, key)))
-          : avg(studentEvals.map((e) => getCriterionValue(e, key)))),
-    ),
+    turma: round1(10 + (classAverages[key] as number)),
   }));
 }
 
@@ -158,22 +151,20 @@ export function computePeriodStats(evals: EnrichedEvaluation[]): PeriodStats[] {
 // ─── main fetch function ──────────────────────────────────────────────────────
 
 export async function fetchStudentDashboardData(studentId: string): Promise<StudentDashboardData> {
-  // Parallel fetch:
-  // - student's evaluations (filtered by studentId — GAP #2 now resolved)
-  // - all evaluations (for class comparison — GAP #3: no dedicated endpoint for class averages)
-  // - student profile (GAP #1 now resolved via GET /api/v1/users/{id})
-  const [studentEvalsRes, allEvalsRes, studentRes] = await Promise.all([
+  const [studentEvalsRes, classAvgsRes, studentRes] = await Promise.all([
     evaluationService.findAll(studentId),
-    evaluationService.findAll(),
+    dashboardService.getClassAverages(studentId),
     userService.findById(studentId),
   ]);
 
   const studentEvaluations: Evaluation[] = studentEvalsRes.data?.data ?? [];
-  const allEvaluations: Evaluation[] = allEvalsRes.data?.data ?? [];
+  const classAverages: ClassAverages = classAvgsRes.data?.data ?? {
+    punctuality: 0, instrumental: 0, boxOrganization: 0,
+    biosecurity: 0, ethics: 0, concept: 0,
+  };
   const student = studentRes.data?.data ?? null;
 
   const enrichedStudentEvals = studentEvaluations.map(toEnriched);
-  const enrichedAllEvals = allEvaluations.map(toEnriched);
 
   const availableSemesters = [...new Set(enrichedStudentEvals.map((e) => e.academicSemester))]
     .filter(Boolean)
@@ -183,12 +174,12 @@ export async function fetchStudentDashboardData(studentId: string): Promise<Stud
   return {
     student,
     enrichedEvals: enrichedStudentEvals,
-    allEnrichedEvals: enrichedAllEvals,
+    classAverages,
     overviewStats: computeOverviewStats(enrichedStudentEvals),
     radarData: computeRadarData(enrichedStudentEvals),
     progressData: computeProgressData(enrichedStudentEvals),
     specialtyData: computeSpecialtyData(enrichedStudentEvals),
-    comparisonData: computeClassComparison(enrichedStudentEvals, enrichedAllEvals, studentId),
+    comparisonData: computeClassComparison(enrichedStudentEvals, classAverages),
     periodStats: computePeriodStats(enrichedStudentEvals),
     availableSemesters,
   };

@@ -17,19 +17,14 @@ export default function LoginPage() {
     try {
       const res = await authService.login(values.email, values.password);
       const { token, userId, userRole } = res.data.data;
-      console.log(userRole)
 
       // Store token before next request so the interceptor can attach it
       localStorage.setItem('token', token);
 
-      // TODO [API GAP #1]: Replace with userService.findById(userId) once
-      // GET /api/v1/users/{id} is available. For now, fetch the user's role
-      // group and filter client-side.
       let currentUser: User | undefined;
       try {
-        const usersRes = await userService.findAll(userRole);
-        const users: User[] = usersRes.data?.data ?? [];
-        currentUser = users.find((u) => u.id === userId);
+        const userRes = await userService.findById(userId);
+        currentUser = userRes.data?.data ?? undefined;
       } catch {
         // If user fetch fails, build a minimal user from login data
       }

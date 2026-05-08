@@ -87,8 +87,7 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      const teste = await authService.register(values.name.trim(), values.email.trim(), values.password);
-      console.log('Registro bem-sucedido:', teste);
+      await authService.register(values.name.trim(), values.email.trim(), values.password);
       message.success('Conta criada com sucesso! Faça login para continuar.');
       navigate('/login');
     } catch (err: unknown) {

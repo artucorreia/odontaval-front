@@ -68,6 +68,10 @@ export const userService = {
 
 export const dashboardService = {
   getStats: () => api.get<ApiResponse<DashboardStats>>('/api/v1/dashboard/stats'),
+  getClassAverages: (excludeStudentId?: string) =>
+    api.get('/api/v1/dashboard/class-averages', {
+      params: excludeStudentId ? { excludeStudentId } : undefined,
+    }),
 };
 
 export default api;

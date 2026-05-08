@@ -65,10 +65,19 @@ export interface ComparisonDatum {
   turma: number;
 }
 
+export interface ClassAverages {
+  punctuality: number;
+  instrumental: number;
+  boxOrganization: number;
+  biosecurity: number;
+  ethics: number;
+  concept: number;
+}
+
 export interface StudentDashboardData {
   student: import('./index').User | null;
   enrichedEvals: EnrichedEvaluation[];
-  allEnrichedEvals: EnrichedEvaluation[];
+  classAverages: ClassAverages;
   overviewStats: StudentOverviewStats;
   radarData: RadarDatum[];
   progressData: ProgressDatum[];
