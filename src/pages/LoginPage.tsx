@@ -17,6 +17,7 @@ export default function LoginPage() {
     try {
       const res = await authService.login(values.email, values.password);
       const { token, userId, userRole } = res.data.data;
+      console.log(userRole)
 
       // Store token before next request so the interceptor can attach it
       localStorage.setItem('token', token);
@@ -44,7 +45,11 @@ export default function LoginPage() {
 
       login(token, currentUser);
       message.success('Login realizado com sucesso!');
-      navigate(userRole === 'STUDENT' ? '/alunos/me' : '/dashboard');
+      if (userRole === 'STUDENT') {
+        navigate('/alunos/me');
+      } else {
+        navigate('/dashboard');
+      }
     } catch {
       localStorage.removeItem('token');
       message.error('E-mail ou senha inválidos.');
