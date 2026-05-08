@@ -15,6 +15,7 @@ import StudentDetailPage from './pages/StudentDetailPage';
 import EvaluationsPage from './pages/EvaluationsPage';
 import NewEvaluationPage from './pages/NewEvaluationPage';
 import ReportsPage from './pages/ReportsPage';
+import ProfilePage from './pages/ProfilePage';
 
 const theme = {
   token: {
@@ -53,6 +54,7 @@ export default function App() {
               <Route path="avaliacoes" element={<EvaluationsPage />} />
               <Route path="avaliacoes/nova" element={<NewEvaluationPage />} />
               <Route path="relatorios" element={<ReportsPage />} />
+              <Route path="perfil" element={<ProfilePage />} />
             </Route>
 
             {/* Student area — minimal layout, blocked for PROFESSOR */}
@@ -67,6 +69,7 @@ export default function App() {
               }
             >
               <Route index element={<StudentDetailPage />} />
+              <Route path="perfil" element={<ProfilePage />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/dashboard" replace />} />

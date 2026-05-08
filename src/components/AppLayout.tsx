@@ -8,6 +8,7 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   FileTextOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
 import { useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -28,12 +29,18 @@ export default function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const userMenuItems = [{ key: 'logout', icon: <LogoutOutlined />, label: 'Sair', danger: true }];
+  const userMenuItems = [
+    { key: 'profile', icon: <UserOutlined />, label: 'Meu Perfil' },
+    { type: 'divider' as const },
+    { key: 'logout', icon: <LogoutOutlined />, label: 'Sair', danger: true },
+  ];
 
   const handleUserMenu = ({ key }: { key: string }) => {
     if (key === 'logout') {
       logout();
       navigate('/login');
+    } else if (key === 'profile') {
+      navigate('/perfil');
     }
   };
 

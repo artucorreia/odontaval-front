@@ -64,6 +64,10 @@ export const userService = {
   // Always pass a role to avoid HTTP 400.
   findAll: (role: string) => api.get('/api/v1/users', { params: { role } }),
   findById: (id: string) => api.get(`/api/v1/users/${id}`),
+  update: (id: string, data: { name?: string; email?: string }) =>
+    api.put(`/api/v1/users/${id}`, data),
+  updatePassword: (id: string, data: { currentPassword: string; newPassword: string }) =>
+    api.put(`/api/v1/users/${id}/password`, data),
 };
 
 export const dashboardService = {
