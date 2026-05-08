@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { CreateEvaluationRequest, UpdateEvaluationRequest } from '../types';
+import type { AuthLoginResponse, CreateEvaluationRequest, UpdateEvaluationRequest } from '../types';
 
 const BASE_URL = 'http://localhost:8081';
 
@@ -31,10 +31,7 @@ api.interceptors.response.use(
 
 export const authService = {
   login: (email: string, password: string) =>
-    api.post<{ success: boolean; code: number; data: { userId: string; userRole: string; token: string } }>(
-      '/api/auth/login',
-      { email, password },
-    ),
+    api.post<AuthLoginResponse>('/api/auth/login', { email, password }),
   register: (name: string, email: string, password: string) =>
     api.post('/api/auth/register', { name, email, password }),
 };
@@ -56,11 +53,20 @@ export const evaluationService = {
   update: (id: string | number, data: UpdateEvaluationRequest) =>
     api.put(`/api/v1/evaluations/${id}`, data),
   delete: (id: string | number) => api.delete(`/api/v1/evaluations/${id}`),
+  // TODO [API GAP #2]: Replace with api.get('/api/v1/evaluations', { params: { studentId } })
+  // once GET /api/v1/evaluations?studentId= is implemented in the backend.
+  // Track: EvaluationController needs @RequestParam(required = false) String studentId.
 };
 
 export const userService = {
-  findAll: (role?: string) =>
-    api.get('/api/v1/users', { params: role ? { role } : {} }),
+  // NOTE: The backend @RequestParam String role is required (no default).
+  // The API contract marks it as optional — this is a backend discrepancy.
+  // Always pass a role to avoid HTTP 400.
+  findAll: (role: string) =>
+    api.get('/api/v1/users', { params: { role } }),
+  // TODO [API GAP #1]: Replace with api.get(`/api/v1/users/${id}`)
+  // once GET /api/v1/users/{id} is exposed in UserController.
+  // The UserService.findById(UUID) method already exists — only the controller endpoint is missing.
 };
 
 export const dashboardService = {

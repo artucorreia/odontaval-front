@@ -1,19 +1,10 @@
 import { useState, useEffect } from 'react';
-import {
-  Card,
-  Button,
-  Input,
-  Typography,
-  Tag,
-  Avatar,
-  Tooltip,
-} from 'antd';
+import { Card, Button, Input, Typography, Tag, Avatar, Tooltip, Alert } from 'antd';
 import ResponsiveTable from '../components/ResponsiveTable';
-import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
+import { SearchOutlined, EyeOutlined, ReloadOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useNavigate } from 'react-router-dom';
 import { userService } from '../services/api';
-import { MOCK_STUDENTS } from '../utils/mockData';
 import type { User } from '../types';
 
 const { Title, Text } = Typography;
@@ -22,17 +13,23 @@ export default function StudentsPage() {
   const [search, setSearch] = useState('');
   const [students, setStudents] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const fetchStudents = () => {
+    setLoading(true);
+    setError(null);
     userService
       .findAll('STUDENT')
       .then((res) => {
-        const data: User[] = res.data?.data ?? [];
-        setStudents(data.length > 0 ? data : MOCK_STUDENTS);
+        setStudents(res.data?.data ?? []);
       })
-      .catch(() => setStudents(MOCK_STUDENTS))
+      .catch(() => setError('Não foi possível carregar os alunos. Verifique a conexão com o servidor.'))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchStudents();
   }, []);
 
   const filtered = students.filter(
@@ -65,20 +62,24 @@ export default function StudentsPage() {
       ),
     },
     {
-      title: 'Status',
-      key: 'status',
-      render: () => (
-        <Tag color="green" className="rounded-full">
-          Ativo
-        </Tag>
-      ),
-    },
-    {
       title: 'Perfil',
       key: 'role',
       render: (_, record) => (
         <Tag className="tag-role-aluno rounded-full">{record.roles[0]?.name}</Tag>
       ),
+    },
+    {
+      title: 'Membro desde',
+      key: 'createdAt',
+      responsive: ['md'],
+      render: (_, record) =>
+        record.createdAt
+          ? new Date(record.createdAt).toLocaleDateString('pt-BR', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+            })
+          : '—',
     },
     {
       title: 'Ações',
@@ -105,14 +106,29 @@ export default function StudentsPage() {
         <Text style={{ color: '#636E72' }}>Visualize os alunos cadastrados</Text>
       </div>
 
+      {error && (
+        <Alert
+          type="error"
+          message={error}
+          action={
+            <Button size="small" icon={<ReloadOutlined />} onClick={fetchStudents}>
+              Tentar novamente
+            </Button>
+          }
+          style={{ marginBottom: 16 }}
+          showIcon
+        />
+      )}
+
       <Card style={{ borderRadius: 12, border: '1px solid #f0f0f0' }}>
         <div className="mb-4">
           <Input
-            placeholder="Buscar aluno..."
+            placeholder="Buscar aluno por nome ou e-mail..."
             prefix={<SearchOutlined style={{ color: '#636E72' }} />}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{ maxWidth: 360, borderRadius: 8 }}
+            disabled={!!error}
           />
         </div>
 

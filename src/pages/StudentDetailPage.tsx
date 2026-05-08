@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Card, Button, Typography, Tag, Avatar, Descriptions, Breadcrumb, Spin, Alert } from 'antd';
+import { Card, Button, Typography, Tag, Avatar, Descriptions, Breadcrumb, Spin, Alert, Empty } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchStudentDashboardData } from '../services/studentDashboardService';
 import type { StudentDashboardData } from '../types/studentDashboard';
@@ -25,14 +25,18 @@ export default function StudentDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchData = () => {
     if (!id) return;
     setLoading(true);
     setError(null);
     fetchStudentDashboardData(id)
       .then(setData)
-      .catch(() => setError('Não foi possível carregar os dados do aluno.'))
+      .catch(() => setError('Não foi possível carregar os dados do aluno. Verifique a conexão com o servidor.'))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchData();
   }, [id]);
 
   const student = data?.student;
@@ -43,6 +47,8 @@ export default function StudentDetailPage() {
         .map((n) => n[0])
         .join('')
     : '?';
+
+  const hasEvaluations = (data?.enrichedEvals.length ?? 0) > 0;
 
   return (
     <div>
@@ -67,13 +73,25 @@ export default function StudentDetailPage() {
         </div>
       </div>
 
-      {error && <Alert type="error" message={error} style={{ marginBottom: 16 }} showIcon />}
+      {error && (
+        <Alert
+          type="error"
+          message={error}
+          action={
+            <Button size="small" icon={<ReloadOutlined />} onClick={fetchData}>
+              Tentar novamente
+            </Button>
+          }
+          style={{ marginBottom: 16 }}
+          showIcon
+        />
+      )}
 
       {loading ? (
         <div className="flex items-center justify-center py-24">
           <Spin size="large" tip="Carregando dashboard..." />
         </div>
-      ) : (
+      ) : !error && (
         <div className="space-y-4">
           {/* Profile + Stats Row */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
@@ -83,7 +101,7 @@ export default function StudentDetailPage() {
                   {initials}
                 </Avatar>
                 <Title level={4} style={{ margin: '12px 0 4px', color: '#2D3436' }}>
-                  {student?.name ?? '-'}
+                  {student?.name ?? '—'}
                 </Title>
                 <Tag className="rounded-full mb-4" color="purple">
                   Aluno
@@ -91,7 +109,7 @@ export default function StudentDetailPage() {
               </div>
               <Descriptions column={1} size="small" labelStyle={{ color: '#636E72', fontSize: 13 }}>
                 <Descriptions.Item label="E-mail">
-                  <span style={{ fontSize: 12 }}>{student?.email ?? '-'}</span>
+                  <span style={{ fontSize: 12 }}>{student?.email ?? '—'}</span>
                 </Descriptions.Item>
                 <Descriptions.Item label="Avaliações">
                   <span style={{ fontWeight: 600, color: '#6C5CE7' }}>
@@ -100,7 +118,7 @@ export default function StudentDetailPage() {
                 </Descriptions.Item>
                 <Descriptions.Item label="Média Geral">
                   <span style={{ fontWeight: 600, color: '#6C5CE7', fontSize: 15 }}>
-                    {data?.overviewStats.avgGrade.toFixed(1) ?? '-'}
+                    {data && hasEvaluations ? data.overviewStats.avgGrade.toFixed(1) : '—'}
                   </span>
                 </Descriptions.Item>
               </Descriptions>
@@ -111,25 +129,36 @@ export default function StudentDetailPage() {
             </div>
           </div>
 
-          {/* Progress Chart */}
-          {data && <StudentProgressChart data={data.progressData} />}
+          {!hasEvaluations ? (
+            <Card style={{ borderRadius: 12, border: '1px solid #f0f0f0' }}>
+              <Empty
+                description="Nenhuma avaliação registrada para este aluno"
+                style={{ padding: '32px 0' }}
+              />
+            </Card>
+          ) : (
+            <>
+              {/* Progress Chart */}
+              {data && <StudentProgressChart data={data.progressData} />}
 
-          {/* Radar + Specialty Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {data && <StudentRadarChart data={data.radarData} />}
-            {data && <StudentSpecialtyChart data={data.specialtyData} />}
-          </div>
+              {/* Radar + Specialty Charts */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {data && <StudentRadarChart data={data.radarData} />}
+                {data && <StudentSpecialtyChart data={data.specialtyData} />}
+              </div>
 
-          {/* Comparison Chart */}
-          {data && (
-            <StudentComparisonChart
-              data={data.comparisonData}
-              studentName={student?.name?.split(' ')[0] ?? 'Aluno'}
-            />
+              {/* Comparison Chart */}
+              {data && (
+                <StudentComparisonChart
+                  data={data.comparisonData}
+                  studentName={student?.name?.split(' ')[0] ?? 'Aluno'}
+                />
+              )}
+
+              {/* History Table */}
+              {data && <StudentEvaluationTable data={data.enrichedEvals} />}
+            </>
           )}
-
-          {/* History Table */}
-          {data && <StudentEvaluationTable data={data.enrichedEvals} studentName={student?.name} />}
         </div>
       )}
     </div>

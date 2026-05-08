@@ -11,8 +11,6 @@ import type {
   CriterionKey,
 } from '../types/studentDashboard';
 import { CRITERIA_LABELS } from '../types/studentDashboard';
-import { MOCK_STUDENTS, MOCK_SPECIALISMS, MOCK_PROFESSORS } from '../utils/mockData';
-import { MOCK_STU001_EVALUATIONS, MOCK_CLASS_EVALUATIONS } from '../utils/studentDashboardMocks';
 
 function getCriterionValue(e: EnrichedEvaluation, key: CriterionKey): number {
   const map: Record<CriterionKey, number> = {
@@ -79,7 +77,6 @@ function computeOverviewStats(evals: EnrichedEvaluation[]): StudentOverviewStats
 
   const avgGrade = round1(avg(evals.map((e) => e.grade)));
 
-  // Criterion with penalty closest to 0 = best; furthest = worst
   const criteriaAvgs = (Object.keys(CRITERIA_LABELS) as CriterionKey[]).map((key) => ({
     label: CRITERIA_LABELS[key],
     value: round1(avg(evals.map((e) => getCriterionValue(e, key)))),
@@ -114,7 +111,6 @@ function computeRadarData(evals: EnrichedEvaluation[]): RadarDatum[] {
   if (evals.length === 0) return [];
   return (Object.keys(CRITERIA_LABELS) as CriterionKey[]).map((key) => ({
     subject: CRITERIA_LABELS[key],
-    // convert penalty (0 to -10) to performance (0 to 10): 10 + penalty
     value: round1(10 + avg(evals.map((e) => getCriterionValue(e, key)))),
     fullMark: 10,
   }));
@@ -159,7 +155,6 @@ function computeClassComparison(
   return (Object.keys(CRITERIA_LABELS) as CriterionKey[]).map((key) => ({
     criterion: key,
     label: CRITERIA_LABELS[key],
-    // convert to performance values (0-10)
     student: round1(10 + avg(studentEvals.map((e) => getCriterionValue(e, key)))),
     turma: round1(
       10 +
@@ -171,49 +166,35 @@ function computeClassComparison(
 }
 
 export async function fetchStudentDashboardData(studentId: string): Promise<StudentDashboardData> {
-  let student: User | null = null;
-  let enrichedStudentEvals: EnrichedEvaluation[] = [];
-  let enrichedAllEvals: EnrichedEvaluation[] = [];
-  let usedMock = false;
+  // Fetch all required data in parallel.
+  //
+  // API GAP #1: No GET /api/v1/users/{id} endpoint.
+  //   Workaround: fetch all students and professors separately, filter client-side.
+  //   Fix: expose UserService.findById() in UserController (method already exists).
+  //
+  // API GAP #2: No GET /api/v1/evaluations?studentId= query param.
+  //   Workaround: fetch all evaluations, filter client-side by studentId.
+  //   Fix: add @RequestParam(required = false) String studentId to EvaluationController.findAll().
+  const [evalsRes, specialismsRes, studentsRes, professorsRes] = await Promise.all([
+    evaluationService.findAll(),
+    specialismService.findAll(),
+    userService.findAll('STUDENT'),   // GAP #1 workaround
+    userService.findAll('PROFESSOR'), // needed for professor name enrichment
+  ]);
 
-  try {
-    const [evalsRes, specialismsRes] = await Promise.all([
-      evaluationService.findAll(),
-      specialismService.findAll(),
-    ]);
+  const allEvaluations: Evaluation[] = evalsRes.data?.data ?? [];
+  const specialisms: Specialism[] = specialismsRes.data?.data ?? [];
+  const students: User[] = studentsRes.data?.data ?? [];
+  const professors: User[] = professorsRes.data?.data ?? [];
 
-    const evaluations: Evaluation[] = evalsRes.data?.data ?? [];
-    const specialisms: Specialism[] = specialismsRes.data?.data ?? [];
+  // GAP #1 workaround: find the student by filtering the full list
+  const student = students.find((u) => u.id === studentId) ?? null;
 
-    if (evaluations.length === 0) throw new Error('no data');
+  // GAP #2 workaround: filter evaluations client-side
+  const studentEvals = allEvaluations.filter((e) => e.studentId === studentId);
 
-    enrichedStudentEvals = enrichEvaluations(
-      evaluations.filter((e) => e.studentId === studentId),
-      specialisms,
-      MOCK_PROFESSORS,
-    );
-    enrichedAllEvals = enrichEvaluations(evaluations, specialisms, MOCK_PROFESSORS);
-
-    try {
-      const usersRes = await userService.findAll();
-      const users: User[] = usersRes.data?.data ?? [];
-      student = users.find((u) => u.id === studentId) ?? null;
-    } catch {
-      student = MOCK_STUDENTS.find((s) => s.id === studentId) ?? null;
-    }
-  } catch {
-    usedMock = true;
-
-    const allEvals = [...MOCK_STU001_EVALUATIONS, ...MOCK_CLASS_EVALUATIONS];
-
-    enrichedStudentEvals = enrichEvaluations(
-      allEvals.filter((e) => e.studentId === studentId),
-      MOCK_SPECIALISMS,
-      MOCK_PROFESSORS,
-    );
-    enrichedAllEvals = enrichEvaluations(allEvals, MOCK_SPECIALISMS, MOCK_PROFESSORS);
-    student = MOCK_STUDENTS.find((s) => s.id === studentId) ?? MOCK_STUDENTS[0];
-  }
+  const enrichedStudentEvals = enrichEvaluations(studentEvals, specialisms, professors);
+  const enrichedAllEvals = enrichEvaluations(allEvaluations, specialisms, professors);
 
   return {
     student,
@@ -223,6 +204,6 @@ export async function fetchStudentDashboardData(studentId: string): Promise<Stud
     progressData: computeProgressData(enrichedStudentEvals),
     specialtyData: computeSpecialtyData(enrichedStudentEvals),
     comparisonData: computeClassComparison(enrichedStudentEvals, enrichedAllEvals, studentId),
-    usedMock,
+    usedMock: false,
   };
 }

@@ -21,10 +21,12 @@ export default function LoginPage() {
       // Store token before next request so the interceptor can attach it
       localStorage.setItem('token', token);
 
-      // Fetch the full user profile from the users list
+      // TODO [API GAP #1]: Replace with userService.findById(userId) once
+      // GET /api/v1/users/{id} is available. For now, fetch the user's role
+      // group and filter client-side.
       let currentUser: User | undefined;
       try {
-        const usersRes = await userService.findAll();
+        const usersRes = await userService.findAll(userRole);
         const users: User[] = usersRes.data?.data ?? [];
         currentUser = users.find((u) => u.id === userId);
       } catch {
@@ -40,7 +42,7 @@ export default function LoginPage() {
         };
       }
 
-      login(token, currentUser!);
+      login(token, currentUser);
       message.success('Login realizado com sucesso!');
       navigate(userRole === 'STUDENT' ? '/alunos/me' : '/dashboard');
     } catch {
