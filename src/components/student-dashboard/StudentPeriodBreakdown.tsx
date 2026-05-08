@@ -72,7 +72,7 @@ export default function StudentPeriodBreakdown({ data }: Props) {
                 >
                   {p.period}
                 </Tag>
-                <span style={{ fontSize: 12, color: '#636E72' }}>
+                <span style={{ fontSize: 13, color: '#4a5568', fontWeight: 500 }}>
                   {p.count} {p.count === 1 ? 'avaliação' : 'avaliações'}
                 </span>
               </div>
@@ -96,8 +96,8 @@ export default function StudentPeriodBreakdown({ data }: Props) {
                 </span>
                 <span
                   style={{
-                    fontSize: 10,
-                    color: '#94a3b8',
+                    fontSize: 12,
+                    color: '#64748b',
                     marginTop: 4,
                     fontWeight: 600,
                     textTransform: 'uppercase',
@@ -119,17 +119,17 @@ export default function StudentPeriodBreakdown({ data }: Props) {
                 }}
               >
                 <div style={{ textAlign: 'center', flex: 1 }}>
-                  <div style={{ fontSize: 13, color: '#10b981', fontWeight: 700 }}>
+                  <div style={{ fontSize: 15, color: '#10b981', fontWeight: 700 }}>
                     {p.max.toFixed(1)}
                   </div>
-                  <div style={{ fontSize: 10, color: '#b2bec3', marginTop: 2 }}>Máx</div>
+                  <div style={{ fontSize: 12, color: '#636E72', marginTop: 2, fontWeight: 600 }}>Máx</div>
                 </div>
                 <div style={{ width: 1, background: '#f0f0f0', margin: '0 8px' }} />
                 <div style={{ textAlign: 'center', flex: 1 }}>
-                  <div style={{ fontSize: 13, color: '#e17055', fontWeight: 700 }}>
+                  <div style={{ fontSize: 15, color: '#e17055', fontWeight: 700 }}>
                     {p.min.toFixed(1)}
                   </div>
-                  <div style={{ fontSize: 10, color: '#b2bec3', marginTop: 2 }}>Mín</div>
+                  <div style={{ fontSize: 12, color: '#636E72', marginTop: 2, fontWeight: 600 }}>Mín</div>
                 </div>
               </div>
 
@@ -150,8 +150,8 @@ export default function StudentPeriodBreakdown({ data }: Props) {
                 >
                   <span
                     style={{
-                      fontSize: 11,
-                      color: '#94a3b8',
+                      fontSize: 12,
+                      color: '#636E72',
                       fontWeight: 600,
                       textTransform: 'uppercase',
                       letterSpacing: '0.05em',
@@ -167,8 +167,8 @@ export default function StudentPeriodBreakdown({ data }: Props) {
                     value={peso ?? undefined}
                     onChange={(v) => setWeight(p.period, v)}
                     placeholder="0.00"
-                    size="small"
-                    style={{ width: 72, borderRadius: 6, fontSize: 13 }}
+                    size="middle"
+                    style={{ width: 84, borderRadius: 6, fontSize: 14 }}
                   />
                 </div>
 
@@ -194,8 +194,8 @@ export default function StudentPeriodBreakdown({ data }: Props) {
                       </span>
                       <span
                         style={{
-                          fontSize: 10,
-                          color: '#94a3b8',
+                          fontSize: 12,
+                          color: '#64748b',
                           marginTop: 3,
                           fontWeight: 600,
                           textTransform: 'uppercase',
@@ -206,7 +206,7 @@ export default function StudentPeriodBreakdown({ data }: Props) {
                       </span>
                     </>
                   ) : (
-                    <span style={{ fontSize: 11, color: '#b2bec3' }}>
+                    <span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500 }}>
                       Informe o peso para calcular
                     </span>
                   )}
