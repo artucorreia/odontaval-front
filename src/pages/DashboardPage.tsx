@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Card, Row, Col, Typography, Button, Avatar, List, Spin, Tag } from 'antd';
+import { Card, Col, Row, Typography, Button, Avatar, List, Spin, Tag } from 'antd';
 import {
   TeamOutlined,
   FileTextOutlined,
-  ArrowUpOutlined,
   RightOutlined,
   UserOutlined,
   BarChartOutlined,
   FormOutlined,
+  CalendarOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -17,6 +17,19 @@ import { MOCK_DASHBOARD_STATS, MOCK_EVALUATIONS } from '../utils/mockData';
 
 const { Title, Text } = Typography;
 
+function greeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Bom dia';
+  if (hour < 18) return 'Boa tarde';
+  return 'Boa noite';
+}
+
+function gradeColor(grade: number) {
+  if (grade >= 7) return '#10b981';
+  if (grade >= 5) return '#f59e0b';
+  return '#ef4444';
+}
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -25,13 +38,16 @@ export default function DashboardPage() {
   const [stats, setStats] = useState(MOCK_DASHBOARD_STATS);
 
   const firstName = user?.name?.split(' ')[0] ?? 'Usuário';
+  const today = new Date().toLocaleDateString('pt-BR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
 
   useEffect(() => {
     dashboardService
       .getStats()
-      .then((res) => {
-        if (res.data?.data) setStats(res.data.data);
-      })
+      .then((res) => { if (res.data?.data) setStats(res.data.data); })
       .catch(() => {});
   }, []);
 
@@ -39,10 +55,10 @@ export default function DashboardPage() {
     evaluationService
       .findAll()
       .then((res) => {
-        const evaluations: Evaluation[] = res.data?.data ?? [];
-        if (evaluations.length === 0) throw new Error('empty');
+        const evals: Evaluation[] = res.data?.data ?? [];
+        if (evals.length === 0) throw new Error('empty');
         setRecentEvaluations(
-          [...evaluations]
+          [...evals]
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
             .slice(0, 5),
         );
@@ -57,88 +73,132 @@ export default function DashboardPage() {
       .finally(() => setLoadingEvaluations(false));
   }, []);
 
-  const statCards = [
+  const kpiCards = [
     {
       label: 'Total de Alunos',
       value: stats.totalStudents,
-      delta: `+${stats.studentsThisMonth} este mês`,
-      icon: <TeamOutlined style={{ fontSize: 22, color: '#6C5CE7' }} />,
-      bg: '#ede9fe',
-      onClick: undefined,
+      sub: 'cadastrados no sistema',
+      icon: <TeamOutlined style={{ fontSize: 20, color: '#6C5CE7' }} />,
+      iconBg: '#ede9fe',
+      accent: '#6C5CE7',
     },
     {
       label: 'Avaliações Realizadas',
       value: stats.totalEvaluations,
-      delta: `+${stats.evaluationsThisMonth} este mês`,
-      icon: <FileTextOutlined style={{ fontSize: 22, color: '#00B894' }} />,
-      bg: '#d1fae5',
-      onClick: undefined,
+      sub: 'em todos os semestres',
+      icon: <FileTextOutlined style={{ fontSize: 20, color: '#0984e3' }} />,
+      iconBg: '#dbeafe',
+      accent: '#0984e3',
     },
     {
-      label: 'Avaliações Pendentes',
-      value: stats.pendingEvaluations,
-      delta: 'Ver avaliações',
-      icon: <FormOutlined style={{ fontSize: 22, color: '#0984e3' }} />,
-      bg: '#dbeafe',
-      onClick: () => navigate('/avaliacoes'),
+      label: 'Avaliações este mês',
+      value: stats.evaluationsThisMonth ?? 0,
+      sub: 'no mês corrente',
+      icon: <CalendarOutlined style={{ fontSize: 20, color: '#00b894' }} />,
+      iconBg: '#d1fae5',
+      accent: '#00b894',
+    },
+  ];
+
+  const quickActions = [
+    {
+      label: 'Nova Avaliação',
+      icon: <FormOutlined />,
+      route: '/avaliacoes/nova',
+      bg: '#6C5CE7',
+      color: '#fff',
+      type: 'primary' as const,
+    },
+    {
+      label: 'Gerenciar Alunos',
+      icon: <UserOutlined />,
+      route: '/alunos',
+      bg: '#f5f3ff',
+      color: '#6C5CE7',
+      type: 'default' as const,
+    },
+    {
+      label: 'Ver Relatórios',
+      icon: <BarChartOutlined />,
+      route: '/relatorios',
+      bg: '#f0f9ff',
+      color: '#0984e3',
+      type: 'default' as const,
     },
   ];
 
   return (
     <div>
-      <div className="mb-6">
-        <Title level={2} style={{ margin: 0, color: '#2D3436', fontWeight: 700 }}>
-          Dashboard
-        </Title>
-        <Text style={{ color: '#636E72' }}>Bem-vindo(a) de volta, {firstName}!</Text>
+      {/* ── Welcome banner ───────────────────────────────────────────── */}
+      <div
+        style={{
+          background: 'linear-gradient(135deg, #6C5CE7 0%, #a78bfa 100%)',
+          borderRadius: 16,
+          padding: '24px 32px',
+          marginBottom: 24,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 16,
+        }}
+      >
+        <div>
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', marginBottom: 4 }}>
+            {today}
+          </div>
+          <Title level={2} style={{ margin: 0, color: '#fff', fontWeight: 700 }}>
+            {greeting()}, {firstName}!
+          </Title>
+          <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 14 }}>
+            Aqui está um resumo do sistema
+          </Text>
+        </div>
+        <Avatar
+          size={64}
+          style={{ background: 'rgba(255,255,255,0.2)', fontSize: 26, fontWeight: 700, color: '#fff', flexShrink: 0 }}
+        >
+          {firstName[0]?.toUpperCase()}
+        </Avatar>
       </div>
 
-      <Row gutter={[16, 16]} className="mb-4">
-        {statCards.map((card, i) => (
-          <Col xs={24} sm={8} key={i}>
+      {/* ── KPI cards ────────────────────────────────────────────────── */}
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        {kpiCards.map((card) => (
+          <Col xs={24} sm={8} key={card.label}>
             <Card
-              className="stat-card"
               style={{ borderRadius: 12, border: '1px solid #f0f0f0' }}
-              bodyStyle={{ padding: '20px 24px' }}
+              styles={{ body: { padding: '20px 24px' } }}
             >
-              <div className="flex items-start justify-between">
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                 <div>
-                  <Text style={{ color: '#636E72', fontSize: 13 }}>{card.label}</Text>
+                  <Text style={{ color: '#94a3b8', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    {card.label}
+                  </Text>
                   <div
                     style={{
-                      fontSize: 32,
-                      fontWeight: 700,
-                      color: '#2D3436',
-                      lineHeight: 1.2,
-                      marginTop: 4,
+                      fontSize: 34,
+                      fontWeight: 800,
+                      color: card.accent,
+                      lineHeight: 1.1,
+                      marginTop: 6,
+                      marginBottom: 4,
                     }}
                   >
                     {card.value}
                   </div>
-                  {card.onClick ? (
-                    <a
-                      className="text-xs mt-1 block"
-                      style={{ color: '#6C5CE7' }}
-                      onClick={card.onClick}
-                    >
-                      {card.delta}
-                    </a>
-                  ) : (
-                    <div className="flex items-center gap-1 mt-1">
-                      <ArrowUpOutlined style={{ fontSize: 11, color: '#00B894' }} />
-                      <Text style={{ color: '#00B894', fontSize: 12 }}>{card.delta}</Text>
-                    </div>
-                  )}
+                  <Text style={{ color: '#b2bec3', fontSize: 12 }}>{card.sub}</Text>
                 </div>
                 <div
                   style={{
-                    background: card.bg,
+                    background: card.iconBg,
                     borderRadius: 10,
-                    width: 48,
-                    height: 48,
+                    width: 44,
+                    height: 44,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    flexShrink: 0,
                   }}
                 >
                   {card.icon}
@@ -149,12 +209,13 @@ export default function DashboardPage() {
         ))}
       </Row>
 
+      {/* ── Recent evaluations + Quick actions ───────────────────────── */}
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={16}>
           <Card
-            title={<span className="font-semibold text-secondary">Avaliações Recentes</span>}
+            title={<span style={{ fontWeight: 600, color: '#2D3436' }}>Avaliações Recentes</span>}
             style={{ borderRadius: 12, border: '1px solid #f0f0f0' }}
-            bodyStyle={{ padding: 0 }}
+            styles={{ body: { padding: 0 } }}
             extra={
               <Button
                 type="link"
@@ -167,54 +228,72 @@ export default function DashboardPage() {
             }
           >
             {loadingEvaluations ? (
-              <div className="flex justify-center py-8">
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '32px 0' }}>
                 <Spin />
               </div>
             ) : (
               <List
                 dataSource={recentEvaluations}
                 locale={{ emptyText: 'Nenhuma avaliação encontrada' }}
-                renderItem={(evaluation) => (
+                renderItem={(evaluation, idx) => (
                   <List.Item
                     style={{
                       padding: '14px 24px',
-                      borderBottom: '1px solid #f9f9f9',
                       cursor: 'pointer',
+                      borderBottom: idx < recentEvaluations.length - 1 ? '1px solid #fafafa' : 'none',
+                      transition: 'background 0.15s',
                     }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = '#fafafa')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                     onClick={() => navigate('/avaliacoes')}
                   >
                     <List.Item.Meta
                       avatar={
                         <Avatar
-                          style={{ background: '#ede9fe' }}
+                          style={{ background: '#ede9fe', flexShrink: 0 }}
                           icon={<FormOutlined style={{ color: '#6C5CE7' }} />}
                           size={38}
                         />
                       }
                       title={
-                        <Text style={{ fontSize: 13.5, color: '#2D3436', fontWeight: 600 }}>
-                          {evaluation.title}
-                        </Text>
-                      }
-                      description={
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <Text style={{ fontSize: 12, color: '#636E72' }}>
-                            {new Date(evaluation.date + 'T12:00:00').toLocaleDateString('pt-BR')}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                          <Text style={{ fontSize: 13.5, color: '#2D3436', fontWeight: 600 }}>
+                            {evaluation.title}
                           </Text>
-                          <Tag color="purple" style={{ fontSize: 11, borderRadius: 4 }}>
+                          <Tag color="purple" style={{ borderRadius: 20, margin: 0, fontSize: 11 }}>
                             {evaluation.evaluationNumber}
                           </Tag>
-                          <Tag style={{ fontSize: 11, borderRadius: 4 }}>
-                            {evaluation.academicSemester}
-                          </Tag>
+                        </div>
+                      }
+                      description={
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 2 }}>
+                          {evaluation.studentName && (
+                            <Text style={{ fontSize: 12, color: '#636E72' }}>
+                              {evaluation.studentName}
+                            </Text>
+                          )}
+                          <span style={{ color: '#d1d5db', fontSize: 10 }}>•</span>
+                          <Text style={{ fontSize: 12, color: '#b2bec3' }}>
+                            {new Date(evaluation.date + 'T12:00:00').toLocaleDateString('pt-BR')}
+                          </Text>
+                          {evaluation.specialismName && (
+                            <>
+                              <span style={{ color: '#d1d5db', fontSize: 10 }}>•</span>
+                              <Text style={{ fontSize: 12, color: '#b2bec3' }}>
+                                {evaluation.specialismName}
+                              </Text>
+                            </>
+                          )}
                         </div>
                       }
                     />
                     <div
                       style={{
-                        fontWeight: 700,
+                        fontWeight: 800,
                         fontSize: 18,
-                        color: evaluation.grade >= 7 ? '#00B894' : evaluation.grade >= 5 ? '#e17055' : '#d63031',
+                        color: gradeColor(evaluation.grade),
+                        minWidth: 42,
+                        textAlign: 'right',
                       }}
                     >
                       {evaluation.grade.toFixed(1)}
@@ -228,41 +307,55 @@ export default function DashboardPage() {
 
         <Col xs={24} lg={8}>
           <Card
+            title={<span style={{ fontWeight: 600, color: '#2D3436' }}>Ações Rápidas</span>}
             style={{ borderRadius: 12, border: '1px solid #f0f0f0', height: '100%' }}
-            bodyStyle={{ padding: '20px 24px' }}
+            styles={{ body: { padding: '16px 20px' } }}
           >
-            <Text className="font-semibold text-secondary block mb-4" style={{ fontSize: 15 }}>
-              Ações Rápidas
-            </Text>
-            <div className="flex flex-col gap-3">
-              <Button
-                type="primary"
-                icon={<FormOutlined />}
-                block
-                size="large"
-                style={{ background: '#6C5CE7', borderColor: '#6C5CE7', borderRadius: 8 }}
-                onClick={() => navigate('/avaliacoes/nova')}
-              >
-                Nova Avaliação
-              </Button>
-              <Button
-                icon={<UserOutlined />}
-                block
-                size="large"
-                style={{ borderRadius: 8 }}
-                onClick={() => navigate('/alunos')}
-              >
-                Gerenciar Alunos
-              </Button>
-              <Button
-                icon={<BarChartOutlined />}
-                block
-                size="large"
-                style={{ borderRadius: 8 }}
-                onClick={() => navigate('/relatorios')}
-              >
-                Ver Relatórios
-              </Button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {quickActions.map((action) => (
+                <button
+                  key={action.label}
+                  onClick={() => navigate(action.route)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    background: action.bg,
+                    border: 'none',
+                    borderRadius: 10,
+                    padding: '14px 16px',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left',
+                    transition: 'filter 0.15s',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.filter = 'brightness(0.96)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.filter = 'brightness(1)')}
+                >
+                  <span
+                    style={{
+                      fontSize: 18,
+                      color: action.color,
+                      display: 'flex',
+                      alignItems: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {action.icon}
+                  </span>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: action.color }}>
+                    {action.label}
+                  </span>
+                  <RightOutlined
+                    style={{
+                      fontSize: 11,
+                      color: action.color,
+                      opacity: 0.5,
+                      marginLeft: 'auto',
+                    }}
+                  />
+                </button>
+              ))}
             </div>
           </Card>
         </Col>
