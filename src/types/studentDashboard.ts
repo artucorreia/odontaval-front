@@ -1,6 +1,5 @@
-import type { User } from './index';
+import type { Evaluation } from './index';
 
-// Criteria keys match the Evaluation fields (penalty values: 0 to -10)
 export type CriterionKey =
   | 'punctuality'
   | 'instrumental'
@@ -18,27 +17,10 @@ export const CRITERIA_LABELS: Record<CriterionKey, string> = {
   concept: 'Conceito',
 };
 
-// Evaluation enriched with resolved specialism/professor names
-export interface EnrichedEvaluation {
-  id: number;
-  title: string;
-  date: string;
-  evaluationNumber: string;
-  academicSemester: string;
-  specialismName: string;
-  specialismId: number;
+// Extends Evaluation, guaranteeing professor/specialism names are always resolved strings.
+export interface EnrichedEvaluation extends Evaluation {
   professorName: string;
-  // criteria (0 to -10, penalties)
-  punctuality: number;
-  instrumental: number;
-  boxOrganization: number;
-  biosecurity: number;
-  ethics: number;
-  concept: number;
-  // final grade (0 to 10)
-  grade: number;
-  observations?: string;
-  studentId: string;
+  specialismName: string;
 }
 
 export interface StudentOverviewStats {
@@ -48,6 +30,14 @@ export interface StudentOverviewStats {
   worstCriterion: { label: string; value: number };
   trend: 'up' | 'stable' | 'down';
   trendDelta: number;
+}
+
+export interface PeriodStats {
+  period: 'AV1' | 'AV2' | 'AV3';
+  count: number;
+  avgGrade: number;
+  min: number;
+  max: number;
 }
 
 export interface RadarDatum {
@@ -76,12 +66,15 @@ export interface ComparisonDatum {
 }
 
 export interface StudentDashboardData {
-  student: User | null;
+  student: import('./index').User | null;
   enrichedEvals: EnrichedEvaluation[];
+  allEnrichedEvals: EnrichedEvaluation[];
   overviewStats: StudentOverviewStats;
   radarData: RadarDatum[];
   progressData: ProgressDatum[];
   specialtyData: SpecialtyDatum[];
   comparisonData: ComparisonDatum[];
+  periodStats: PeriodStats[];
+  availableSemesters: string[];
   usedMock: boolean;
 }

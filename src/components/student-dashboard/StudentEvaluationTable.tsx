@@ -1,6 +1,9 @@
-import { Card, Table, Tag, Empty } from 'antd';
+import { useState } from 'react';
+import { Card, Table, Tag, Empty, Button, Tooltip } from 'antd';
+import { EyeOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import type { EnrichedEvaluation } from '../../types/studentDashboard';
+import EvaluationDetailsModal from '../evaluations/EvaluationDetailsModal';
 
 interface Props {
   data: EnrichedEvaluation[];
@@ -16,6 +19,8 @@ function gradeTag(value: number) {
 }
 
 export default function StudentEvaluationTable({ data }: Props) {
+  const [selectedEval, setSelectedEval] = useState<EnrichedEvaluation | null>(null);
+
   const sorted = [...data].sort(
     (a, b) => new Date(b.date || '').getTime() - new Date(a.date || '').getTime(),
   );
@@ -74,25 +79,49 @@ export default function StudentEvaluationTable({ data }: Props) {
       render: (value: number) => gradeTag(value),
       sorter: (a, b) => a.grade - b.grade,
     },
+    {
+      title: '',
+      key: 'actions',
+      align: 'right',
+      width: 48,
+      render: (_, record) => (
+        <Tooltip title="Ver detalhes">
+          <Button
+            type="text"
+            size="small"
+            icon={<EyeOutlined style={{ color: '#6C5CE7' }} />}
+            onClick={() => setSelectedEval(record)}
+          />
+        </Tooltip>
+      ),
+    },
   ];
 
   return (
-    <Card
-      title={<span className="font-semibold">Histórico de Avaliações</span>}
-      style={{ borderRadius: 12, border: '1px solid #f0f0f0' }}
-    >
-      {data.length === 0 ? (
-        <Empty description="Nenhuma avaliação registrada" />
-      ) : (
-        <Table
-          dataSource={sorted}
-          columns={columns}
-          rowKey="id"
-          size="small"
-          pagination={{ pageSize: 8, showSizeChanger: false, showTotal: (t) => `${t} avaliações` }}
-          scroll={{ x: 400 }}
-        />
-      )}
-    </Card>
+    <>
+      <Card
+        title={<span className="font-semibold">Histórico de Avaliações</span>}
+        style={{ borderRadius: 12, border: '1px solid #f0f0f0' }}
+      >
+        {data.length === 0 ? (
+          <Empty description="Nenhuma avaliação registrada" />
+        ) : (
+          <Table
+            dataSource={sorted}
+            columns={columns}
+            rowKey="id"
+            size="small"
+            pagination={{ pageSize: 8, showSizeChanger: false, showTotal: (t) => `${t} avaliações` }}
+            scroll={{ x: 400 }}
+          />
+        )}
+      </Card>
+
+      <EvaluationDetailsModal
+        evaluation={selectedEval}
+        open={!!selectedEval}
+        onClose={() => setSelectedEval(null)}
+      />
+    </>
   );
 }

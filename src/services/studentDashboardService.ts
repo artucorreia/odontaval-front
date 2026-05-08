@@ -1,5 +1,5 @@
-import { evaluationService, specialismService, userService } from './api';
-import type { Evaluation, Specialism, User } from '../types';
+import { evaluationService, userService } from './api';
+import type { Evaluation } from '../types';
 import type {
   EnrichedEvaluation,
   StudentDashboardData,
@@ -8,51 +8,12 @@ import type {
   ProgressDatum,
   SpecialtyDatum,
   ComparisonDatum,
+  PeriodStats,
   CriterionKey,
 } from '../types/studentDashboard';
 import { CRITERIA_LABELS } from '../types/studentDashboard';
 
-function getCriterionValue(e: EnrichedEvaluation, key: CriterionKey): number {
-  const map: Record<CriterionKey, number> = {
-    punctuality: e.punctuality,
-    instrumental: e.instrumental,
-    boxOrganization: e.boxOrganization,
-    biosecurity: e.biosecurity,
-    ethics: e.ethics,
-    concept: e.concept,
-  };
-  return map[key];
-}
-
-function enrichEvaluations(
-  evaluations: Evaluation[],
-  specialisms: Specialism[],
-  professors: User[],
-): EnrichedEvaluation[] {
-  return evaluations.map((ev) => {
-    const specialism = specialisms.find((s) => s.id === ev.specialismId);
-    const professor = professors.find((p) => p.id === ev.professorId);
-    return {
-      id: ev.id,
-      title: ev.title,
-      date: ev.date,
-      evaluationNumber: ev.evaluationNumber,
-      academicSemester: ev.academicSemester,
-      specialismName: specialism?.name ?? 'Especialidade',
-      specialismId: ev.specialismId,
-      professorName: professor?.name ?? '—',
-      punctuality: ev.punctuality,
-      instrumental: ev.instrumental,
-      boxOrganization: ev.boxOrganization,
-      biosecurity: ev.biosecurity,
-      ethics: ev.ethics,
-      concept: ev.concept,
-      grade: ev.grade,
-      observations: ev.observations,
-      studentId: ev.studentId,
-    };
-  });
-}
+// ─── helpers ─────────────────────────────────────────────────────────────────
 
 function avg(values: number[]): number {
   if (values.length === 0) return 0;
@@ -63,7 +24,23 @@ function round1(n: number): number {
   return Math.round(n * 10) / 10;
 }
 
-function computeOverviewStats(evals: EnrichedEvaluation[]): StudentOverviewStats {
+function getCriterionValue(e: EnrichedEvaluation, key: CriterionKey): number {
+  return e[key] as number;
+}
+
+// Converts a raw API Evaluation to EnrichedEvaluation, guaranteeing name fields are strings.
+// The API already returns professorName/specialismName (backend enrichment via @Transactional mapper).
+function toEnriched(ev: Evaluation): EnrichedEvaluation {
+  return {
+    ...ev,
+    professorName: ev.professorName ?? '—',
+    specialismName: ev.specialismName ?? 'Especialidade',
+  };
+}
+
+// ─── computation functions (exported for semester-filter re-use in page) ─────
+
+export function computeOverviewStats(evals: EnrichedEvaluation[]): StudentOverviewStats {
   if (evals.length === 0) {
     return {
       avgGrade: 0,
@@ -82,6 +59,7 @@ function computeOverviewStats(evals: EnrichedEvaluation[]): StudentOverviewStats
     value: round1(avg(evals.map((e) => getCriterionValue(e, key)))),
   }));
 
+  // criteria values are penalties (0 to -10); best = closest to 0, worst = most negative
   const best = criteriaAvgs.reduce((a, b) => (a.value >= b.value ? a : b));
   const worst = criteriaAvgs.reduce((a, b) => (a.value <= b.value ? a : b));
 
@@ -107,7 +85,7 @@ function computeOverviewStats(evals: EnrichedEvaluation[]): StudentOverviewStats
   return { avgGrade, totalEvaluations: evals.length, bestCriterion: best, worstCriterion: worst, trend, trendDelta };
 }
 
-function computeRadarData(evals: EnrichedEvaluation[]): RadarDatum[] {
+export function computeRadarData(evals: EnrichedEvaluation[]): RadarDatum[] {
   if (evals.length === 0) return [];
   return (Object.keys(CRITERIA_LABELS) as CriterionKey[]).map((key) => ({
     subject: CRITERIA_LABELS[key],
@@ -116,7 +94,7 @@ function computeRadarData(evals: EnrichedEvaluation[]): RadarDatum[] {
   }));
 }
 
-function computeProgressData(evals: EnrichedEvaluation[]): ProgressDatum[] {
+export function computeProgressData(evals: EnrichedEvaluation[]): ProgressDatum[] {
   return [...evals]
     .filter((e) => e.date)
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
@@ -129,22 +107,18 @@ function computeProgressData(evals: EnrichedEvaluation[]): ProgressDatum[] {
     }));
 }
 
-function computeSpecialtyData(evals: EnrichedEvaluation[]): SpecialtyDatum[] {
+export function computeSpecialtyData(evals: EnrichedEvaluation[]): SpecialtyDatum[] {
   const bySpecialty: Record<string, number[]> = {};
   for (const e of evals) {
     if (!bySpecialty[e.specialismName]) bySpecialty[e.specialismName] = [];
     bySpecialty[e.specialismName].push(e.grade);
   }
   return Object.entries(bySpecialty)
-    .map(([specialty, values]) => ({
-      specialty,
-      avg: round1(avg(values)),
-      count: values.length,
-    }))
+    .map(([specialty, values]) => ({ specialty, avg: round1(avg(values)), count: values.length }))
     .sort((a, b) => b.avg - a.avg);
 }
 
-function computeClassComparison(
+export function computeClassComparison(
   studentEvals: EnrichedEvaluation[],
   allEvals: EnrichedEvaluation[],
   studentId: string,
@@ -165,45 +139,58 @@ function computeClassComparison(
   }));
 }
 
+export function computePeriodStats(evals: EnrichedEvaluation[]): PeriodStats[] {
+  const PERIODS: Array<'AV1' | 'AV2' | 'AV3'> = ['AV1', 'AV2', 'AV3'];
+  return PERIODS.flatMap((period) => {
+    const periodEvals = evals.filter((e) => e.evaluationNumber === period);
+    if (periodEvals.length === 0) return [];
+    const grades = periodEvals.map((e) => e.grade);
+    return [{
+      period,
+      count: periodEvals.length,
+      avgGrade: round1(avg(grades)),
+      min: Math.min(...grades),
+      max: Math.max(...grades),
+    }];
+  });
+}
+
+// ─── main fetch function ──────────────────────────────────────────────────────
+
 export async function fetchStudentDashboardData(studentId: string): Promise<StudentDashboardData> {
-  // Fetch all required data in parallel.
-  //
-  // API GAP #1: No GET /api/v1/users/{id} endpoint.
-  //   Workaround: fetch all students and professors separately, filter client-side.
-  //   Fix: expose UserService.findById() in UserController (method already exists).
-  //
-  // API GAP #2: No GET /api/v1/evaluations?studentId= query param.
-  //   Workaround: fetch all evaluations, filter client-side by studentId.
-  //   Fix: add @RequestParam(required = false) String studentId to EvaluationController.findAll().
-  const [evalsRes, specialismsRes, studentsRes, professorsRes] = await Promise.all([
+  // Parallel fetch:
+  // - student's evaluations (filtered by studentId — GAP #2 now resolved)
+  // - all evaluations (for class comparison — GAP #3: no dedicated endpoint for class averages)
+  // - student profile (GAP #1 now resolved via GET /api/v1/users/{id})
+  const [studentEvalsRes, allEvalsRes, studentRes] = await Promise.all([
+    evaluationService.findAll(studentId),
     evaluationService.findAll(),
-    specialismService.findAll(),
-    userService.findAll('STUDENT'),   // GAP #1 workaround
-    userService.findAll('PROFESSOR'), // needed for professor name enrichment
+    userService.findById(studentId),
   ]);
 
-  const allEvaluations: Evaluation[] = evalsRes.data?.data ?? [];
-  const specialisms: Specialism[] = specialismsRes.data?.data ?? [];
-  const students: User[] = studentsRes.data?.data ?? [];
-  const professors: User[] = professorsRes.data?.data ?? [];
+  const studentEvaluations: Evaluation[] = studentEvalsRes.data?.data ?? [];
+  const allEvaluations: Evaluation[] = allEvalsRes.data?.data ?? [];
+  const student = studentRes.data?.data ?? null;
 
-  // GAP #1 workaround: find the student by filtering the full list
-  const student = students.find((u) => u.id === studentId) ?? null;
+  const enrichedStudentEvals = studentEvaluations.map(toEnriched);
+  const enrichedAllEvals = allEvaluations.map(toEnriched);
 
-  // GAP #2 workaround: filter evaluations client-side
-  const studentEvals = allEvaluations.filter((e) => e.studentId === studentId);
-
-  const enrichedStudentEvals = enrichEvaluations(studentEvals, specialisms, professors);
-  const enrichedAllEvals = enrichEvaluations(allEvaluations, specialisms, professors);
+  const availableSemesters = [...new Set(enrichedStudentEvals.map((e) => e.academicSemester))]
+    .filter(Boolean)
+    .sort()
+    .reverse();
 
   return {
     student,
     enrichedEvals: enrichedStudentEvals,
+    allEnrichedEvals: enrichedAllEvals,
     overviewStats: computeOverviewStats(enrichedStudentEvals),
     radarData: computeRadarData(enrichedStudentEvals),
     progressData: computeProgressData(enrichedStudentEvals),
     specialtyData: computeSpecialtyData(enrichedStudentEvals),
     comparisonData: computeClassComparison(enrichedStudentEvals, enrichedAllEvals, studentId),
+    periodStats: computePeriodStats(enrichedStudentEvals),
+    availableSemesters,
     usedMock: false,
   };
 }

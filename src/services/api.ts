@@ -47,26 +47,21 @@ export const specialismService = {
 };
 
 export const evaluationService = {
-  findAll: () => api.get('/api/v1/evaluations'),
+  findAll: (studentId?: string) =>
+    api.get('/api/v1/evaluations', { params: studentId ? { studentId } : undefined }),
   findById: (id: string | number) => api.get(`/api/v1/evaluations/${id}`),
   create: (data: CreateEvaluationRequest) => api.post('/api/v1/evaluations', data),
   update: (id: string | number, data: UpdateEvaluationRequest) =>
     api.put(`/api/v1/evaluations/${id}`, data),
   delete: (id: string | number) => api.delete(`/api/v1/evaluations/${id}`),
-  // TODO [API GAP #2]: Replace with api.get('/api/v1/evaluations', { params: { studentId } })
-  // once GET /api/v1/evaluations?studentId= is implemented in the backend.
-  // Track: EvaluationController needs @RequestParam(required = false) String studentId.
 };
 
 export const userService = {
   // NOTE: The backend @RequestParam String role is required (no default).
   // The API contract marks it as optional — this is a backend discrepancy.
   // Always pass a role to avoid HTTP 400.
-  findAll: (role: string) =>
-    api.get('/api/v1/users', { params: { role } }),
-  // TODO [API GAP #1]: Replace with api.get(`/api/v1/users/${id}`)
-  // once GET /api/v1/users/{id} is exposed in UserController.
-  // The UserService.findById(UUID) method already exists — only the controller endpoint is missing.
+  findAll: (role: string) => api.get('/api/v1/users', { params: { role } }),
+  findById: (id: string) => api.get(`/api/v1/users/${id}`),
 };
 
 export const dashboardService = {
