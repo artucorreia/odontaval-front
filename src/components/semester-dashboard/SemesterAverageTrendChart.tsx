@@ -7,7 +7,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  ReferenceLine,
 } from 'recharts';
 import type { AverageTrendDatum } from '../../types/semesterDashboard';
 
@@ -48,9 +47,8 @@ export default function SemesterAverageTrendChart({ data }: Props) {
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f5" vertical={false} />
             <XAxis dataKey="period" tick={{ fontSize: 12, fill: '#636E72' }} axisLine={false} tickLine={false} />
-            <YAxis domain={[5, 10]} tick={{ fontSize: 11, fill: '#636E72' }} axisLine={false} tickLine={false} tickCount={6} />
+            <YAxis domain={[0, 10]} tick={{ fontSize: 11, fill: '#636E72' }} axisLine={false} tickLine={false} tickCount={6} />
             <Tooltip content={<CustomTooltip />} />
-            <ReferenceLine y={7} stroke="#FDCB6E" strokeDasharray="4 4" strokeWidth={1.5} />
             <Area
               type="monotone"
               dataKey="avg"
@@ -63,9 +61,6 @@ export default function SemesterAverageTrendChart({ data }: Props) {
           </AreaChart>
         </ResponsiveContainer>
       )}
-      <div style={{ fontSize: 11, color: '#b2bec3', marginTop: 6, textAlign: 'right' }}>
-        Linha pontilhada = nota mínima (7.0)
-      </div>
     </Card>
   );
 }

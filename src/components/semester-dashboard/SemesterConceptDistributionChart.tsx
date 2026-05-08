@@ -41,7 +41,7 @@ export default function SemesterConceptDistributionChart({ data }: Props) {
 
   return (
     <Card
-      title={<span className="font-semibold">Distribuição de Conceitos</span>}
+      title={<span className="font-semibold">Distribuição de Notas</span>}
       style={{ borderRadius: 12, border: '1px solid #f0f0f0', height: '100%' }}
     >
       {!hasData ? (

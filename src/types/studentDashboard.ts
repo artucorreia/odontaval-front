@@ -76,5 +76,4 @@ export interface StudentDashboardData {
   comparisonData: ComparisonDatum[];
   periodStats: PeriodStats[];
   availableSemesters: string[];
-  usedMock: boolean;
 }

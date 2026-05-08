@@ -56,12 +56,12 @@ export default function SemesterSpecialtyChart({ data }: Props) {
               ]}
               contentStyle={{ borderRadius: 8, border: '1px solid #f0f0f0', fontSize: 13 }}
             />
-            <Bar dataKey="avgConcept" radius={[0, 6, 6, 0]} maxBarSize={26}>
+            <Bar dataKey="avgGrade" radius={[0, 6, 6, 0]} maxBarSize={26}>
               {data.map((_, i) => (
                 <Cell key={i} fill={COLORS[i % COLORS.length]} />
               ))}
               <LabelList
-                dataKey="avgConcept"
+                dataKey="avgGrade"
                 position="right"
                 formatter={(v: number) => v.toFixed(1)}
                 style={{ fontSize: 12, fontWeight: 600, fill: '#2D3436' }}

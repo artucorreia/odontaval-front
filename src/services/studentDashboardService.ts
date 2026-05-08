@@ -191,6 +191,5 @@ export async function fetchStudentDashboardData(studentId: string): Promise<Stud
     comparisonData: computeClassComparison(enrichedStudentEvals, enrichedAllEvals, studentId),
     periodStats: computePeriodStats(enrichedStudentEvals),
     availableSemesters,
-    usedMock: false,
   };
 }

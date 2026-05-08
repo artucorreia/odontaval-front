@@ -2,19 +2,18 @@ export interface SemesterKPIs {
   totalEvaluations: number;
   totalStudents: number;
   totalProfessors: number;
-  avgConcept: number;
-  approvalRate: number;
+  avgGrade: number;
 }
 
 export interface EvaluationsOverTimeDatum {
   period: string;
   count: number;
-  avgConcept: number;
+  avgGrade: number;
 }
 
 export interface SpecialtyPerformanceDatum {
   specialty: string;
-  avgConcept: number;
+  avgGrade: number;
   count: number;
 }
 
@@ -48,7 +47,7 @@ export interface HeatmapCell {
 export interface TopStudentDatum {
   studentId: string;
   studentName: string;
-  avgConcept: number;
+  avgGrade: number;
   totalEvaluations: number;
 }
 
@@ -62,5 +61,5 @@ export interface SemesterDashboardData {
   criteriaComparison: CriteriaComparisonDatum[];
   heatmap: HeatmapCell[];
   topStudents: TopStudentDatum[];
-  usedMock: boolean;
+  availableSemesters: string[];
 }

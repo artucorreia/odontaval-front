@@ -3,7 +3,6 @@ import {
   FileTextOutlined,
   TeamOutlined,
   BarChartOutlined,
-  CheckCircleOutlined,
   UserSwitchOutlined,
 } from '@ant-design/icons';
 import type { SemesterKPIs } from '../../types/semesterDashboard';
@@ -13,9 +12,6 @@ interface Props {
 }
 
 export default function SemesterOverviewCards({ kpis }: Props) {
-  const approvalColor =
-    kpis.approvalRate >= 80 ? '#00B894' : kpis.approvalRate >= 60 ? '#FDCB6E' : '#E17055';
-
   const cards = [
     {
       title: 'Avaliações',
@@ -46,26 +42,17 @@ export default function SemesterOverviewCards({ kpis }: Props) {
     },
     {
       title: 'Média Geral',
-      value: kpis.avgConcept,
+      value: kpis.avgGrade,
       suffix: '/ 10',
       precision: 1,
       icon: <BarChartOutlined style={{ fontSize: 20, color: '#a29bfe' }} />,
       bg: '#a29bfe15',
-      tooltip: 'Média do conceito final de todos os alunos no semestre',
-    },
-    {
-      title: 'Taxa de Aprovação',
-      value: kpis.approvalRate,
-      suffix: '%',
-      precision: 1,
-      icon: <CheckCircleOutlined style={{ fontSize: 20, color: approvalColor }} />,
-      bg: `${approvalColor}15`,
-      tooltip: 'Percentual de alunos com conceito ≥ 7.0',
+      tooltip: 'Média da nota final de todos os alunos no semestre',
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {cards.map((card) => (
         <Tooltip key={card.title} title={card.tooltip}>
           <Card

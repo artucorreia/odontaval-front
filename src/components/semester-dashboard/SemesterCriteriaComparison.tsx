@@ -9,7 +9,6 @@ import {
   ResponsiveContainer,
   Cell,
   LabelList,
-  ReferenceLine,
 } from 'recharts';
 import type { CriteriaComparisonDatum } from '../../types/semesterDashboard';
 
@@ -53,7 +52,6 @@ export default function SemesterCriteriaComparison({ data }: Props) {
                 formatter={(value: number) => [value.toFixed(1), 'Média']}
                 contentStyle={{ borderRadius: 8, border: '1px solid #f0f0f0', fontSize: 13 }}
               />
-              <ReferenceLine y={7} stroke="#FDCB6E" strokeDasharray="4 4" strokeWidth={1.5} />
               <Bar dataKey="avg" radius={[6, 6, 0, 0]} maxBarSize={54}>
                 {data.map((entry) => (
                   <Cell key={entry.label} fill={barColor(entry)} />

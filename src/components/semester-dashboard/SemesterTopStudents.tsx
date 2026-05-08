@@ -31,8 +31,8 @@ const columns = [
   },
   {
     title: 'Média',
-    dataIndex: 'avgConcept',
-    key: 'avgConcept',
+    dataIndex: 'avgGrade',
+    key: 'avgGrade',
     width: 90,
     render: (v: number) => {
       const color = v >= 9 ? '#00B894' : v >= 7 ? '#6C5CE7' : v >= 5 ? '#FDCB6E' : '#E17055';
