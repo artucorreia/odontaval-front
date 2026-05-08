@@ -3,7 +3,8 @@ import { Form, Input, Button, Checkbox, message } from 'antd';
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { authService } from '../services/api';
+import { authService, userService } from '../services/api';
+import type { RoleName, User } from '../types';
 import LogoWhite from '../assets/logo-white.svg';
 
 export default function LoginPage() {
@@ -15,15 +16,38 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const res = await authService.login(values.email, values.password);
-      const { token, userId } = res.data.data;
-      login(token, userId);
+      const { token, userId, userRole } = res.data.data;
+
+      // Store token before next request so the interceptor can attach it
+      localStorage.setItem('token', token);
+
+      let currentUser: User | undefined;
+      try {
+        const userRes = await userService.findById(userId);
+        currentUser = userRes.data?.data ?? undefined;
+      } catch {
+        // If user fetch fails, build a minimal user from login data
+      }
+
+      if (!currentUser) {
+        currentUser = {
+          id: userId,
+          name: values.email,
+          email: values.email,
+          roles: [{ id: 0, name: userRole as RoleName }],
+        };
+      }
+
+      login(token, currentUser);
       message.success('Login realizado com sucesso!');
-      navigate('/dashboard');
+      if (userRole === 'STUDENT') {
+        navigate('/alunos/me');
+      } else {
+        navigate('/dashboard');
+      }
     } catch {
-      // Demo mode: accept any credentials
-      login('demo-token-123', 'e6f16904-fa64-422a-86f0-1aba11d768f7');
-      message.success('Login realizado com sucesso!');
-      navigate('/dashboard');
+      localStorage.removeItem('token');
+      message.error('E-mail ou senha inválidos.');
     } finally {
       setLoading(false);
     }
@@ -65,7 +89,7 @@ export default function LoginPage() {
                 name="password"
                 rules={[
                   { required: true, message: 'Informe sua senha' },
-                  { min: 5, message: 'A senha deve ter no mínimo 5 caracteres' },
+                  { min: 8, message: 'A senha deve ter no mínimo 8 caracteres' },
                 ]}
               >
                 <Input.Password
@@ -100,7 +124,18 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <p className="text-center text-xs text-muted mt-6">
+        <p className="text-center text-sm text-muted mt-4">
+          Não tem uma conta?{' '}
+          <button
+            onClick={() => navigate('/register')}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            className="text-primary hover:text-primary-dark font-medium"
+          >
+            Cadastre-se
+          </button>
+        </p>
+
+        <p className="text-center text-xs text-muted mt-3">
           © 2025 ODONTAVAL. Todos os direitos reservados.
         </p>
       </div>

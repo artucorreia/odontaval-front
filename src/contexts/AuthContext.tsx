@@ -6,20 +6,13 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (token: string, userId: string) => void;
+  login: (token: string, user: User) => void;
   logout: () => void;
+  updateUser: (partial: Partial<User>) => void;
   hasRole: (role: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
-
-// Mock user data - in production this would come from /api/v1/users/:id
-const MOCK_USER: User = {
-  id: 'e6f16904-fa64-422a-86f0-1aba11d768f7',
-  name: 'Dr. João Silva',
-  email: 'joao.silva@odontaval.com',
-  roles: [{ id: 1, name: 'PROFESSOR' }],
-};
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -28,44 +21,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
-    const storedUserId = localStorage.getItem('userId');
-    if (storedToken && storedUserId) {
-      setToken(storedToken);
-      // In production: fetch user from API
-      setUser(MOCK_USER);
+    const storedUser = localStorage.getItem('user');
+    if (storedToken && storedUser) {
+      try {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
+      } catch {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
     }
     setIsLoading(false);
   }, []);
 
-  const login = (newToken: string, userId: string) => {
+  const login = (newToken: string, newUser: User) => {
     localStorage.setItem('token', newToken);
-    localStorage.setItem('userId', userId);
+    localStorage.setItem('userId', newUser.id);
+    localStorage.setItem('user', JSON.stringify(newUser));
     setToken(newToken);
-    setUser({ ...MOCK_USER, id: userId });
+    setUser(newUser);
   };
 
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
+    localStorage.removeItem('user');
     setToken(null);
     setUser(null);
   };
 
-  const hasRole = (role: string) => {
-    return user?.roles?.some((r) => r.name === role) ?? false;
+  const updateUser = (partial: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const updated = { ...prev, ...partial };
+      localStorage.setItem('user', JSON.stringify(updated));
+      return updated;
+    });
   };
+
+  const hasRole = (role: string) => user?.roles?.some((r) => r.name === role) ?? false;
 
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        token,
-        isAuthenticated: !!token && !!user,
-        isLoading,
-        login,
-        logout,
-        hasRole,
-      }}
+      value={{ user, token, isAuthenticated: !!token && !!user, isLoading, login, logout, updateUser, hasRole }}
     >
       {children}
     </AuthContext.Provider>

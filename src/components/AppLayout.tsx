@@ -1,17 +1,14 @@
 import { useState } from 'react';
-import { Layout, Menu, Avatar, Dropdown, Badge, Button, Space } from 'antd';
+import { Layout, Menu, Avatar, Dropdown, Button, Space } from 'antd';
 import {
   DashboardOutlined,
   TeamOutlined,
-  FileTextOutlined,
-  CalendarOutlined,
   BarChartOutlined,
   LogoutOutlined,
-  BellOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  FileTextOutlined,
   UserOutlined,
-  MedicineBoxOutlined,
 } from '@ant-design/icons';
 import { useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -23,8 +20,6 @@ const menuItems = [
   { key: '/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
   { key: '/alunos', icon: <TeamOutlined />, label: 'Alunos' },
   { key: '/avaliacoes', icon: <FileTextOutlined />, label: 'Avaliações' },
-  { key: '/exames', icon: <MedicineBoxOutlined />, label: 'Exames' },
-  { key: '/agenda', icon: <CalendarOutlined />, label: 'Agenda' },
   { key: '/relatorios', icon: <BarChartOutlined />, label: 'Relatórios' },
 ];
 
@@ -35,7 +30,8 @@ export default function AppLayout() {
   const navigate = useNavigate();
 
   const userMenuItems = [
-    { key: 'profile', icon: <UserOutlined />, label: 'Perfil' },
+    { key: 'profile', icon: <UserOutlined />, label: 'Meu Perfil' },
+    { type: 'divider' as const },
     { key: 'logout', icon: <LogoutOutlined />, label: 'Sair', danger: true },
   ];
 
@@ -43,6 +39,8 @@ export default function AppLayout() {
     if (key === 'logout') {
       logout();
       navigate('/login');
+    } else if (key === 'profile') {
+      navigate('/perfil');
     }
   };
 
@@ -52,10 +50,6 @@ export default function AppLayout() {
       .slice(0, 2)
       .map((n) => n[0])
       .join('') ?? 'U';
-
-  const roleName = user?.roles?.[0]?.name;
-  const roleLabel =
-    roleName === 'PROFESSOR' ? 'Odontólogo' : roleName === 'ADMIN' ? 'Administrador' : 'Aluno';
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -83,7 +77,7 @@ export default function AppLayout() {
           }}
         >
           <div className="bg-primary rounded-lg w-12 h-12 flex items-center justify-center">
-            <img src={LogoWhite} className="size-10" />
+            <img src={LogoWhite} className="size-9" />
           </div>
           {!collapsed && <span className="brand-name">ODONTAVAL</span>}
         </div>
@@ -140,10 +134,6 @@ export default function AppLayout() {
           />
 
           <Space size={16}>
-            <Badge count={3} size="small">
-              <Button type="text" icon={<BellOutlined style={{ fontSize: 18 }} />} />
-            </Badge>
-
             <Dropdown
               menu={{ items: userMenuItems, onClick: handleUserMenu }}
               placement="bottomRight"
@@ -156,7 +146,6 @@ export default function AppLayout() {
                   <div className="text-sm font-semibold text-secondary leading-tight">
                     {user?.name}
                   </div>
-                  <div className="text-xs text-muted">{roleLabel}</div>
                 </div>
               </div>
             </Dropdown>
