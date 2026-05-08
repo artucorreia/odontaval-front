@@ -38,8 +38,12 @@ export interface Evaluation {
   box: string;
   procedurePerformed: string;
   professorId: string;
+  professorName?: string;
   studentId: string;
+  studentName?: string;
+  studentEmail?: string;
   specialismId: number;
+  specialismName?: string;
 }
 
 export interface CreateEvaluationRequest {
@@ -62,7 +66,23 @@ export interface CreateEvaluationRequest {
   specialismId: number;
 }
 
-export type UpdateEvaluationRequest = CreateEvaluationRequest;
+export interface UpdateEvaluationRequest {
+  title?: string;
+  punctuality?: number;
+  instrumental?: number;
+  boxOrganization?: number;
+  biosecurity?: number;
+  ethics?: number;
+  concept?: number;
+  grade?: number;
+  observations?: string;
+  evaluationNumber?: string;
+  date?: string;
+  academicSemester?: string;
+  goals?: string;
+  box?: string;
+  procedurePerformed?: string;
+}
 
 export interface AuthLoginResponse {
   success: boolean;

@@ -16,7 +16,6 @@ import {
 import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { evaluationService, userService, specialismService } from '../services/api';
-import { MOCK_STUDENTS, MOCK_SPECIALISMS } from '../utils/mockData';
 import type { User, Specialism, CreateEvaluationRequest } from '../types';
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -49,19 +48,13 @@ export default function NewEvaluationPage() {
   useEffect(() => {
     userService
       .findAll('STUDENT')
-      .then((res) => {
-        const data: User[] = res.data?.data ?? [];
-        setStudents(data.length > 0 ? data : MOCK_STUDENTS);
-      })
-      .catch(() => setStudents(MOCK_STUDENTS));
+      .then((res) => setStudents(res.data?.data ?? []))
+      .catch(() => {});
 
     specialismService
       .findAll()
-      .then((res) => {
-        const data: Specialism[] = res.data?.data ?? [];
-        setSpecialisms(data.length > 0 ? data : MOCK_SPECIALISMS);
-      })
-      .catch(() => setSpecialisms(MOCK_SPECIALISMS));
+      .then((res) => setSpecialisms(res.data?.data ?? []))
+      .catch(() => {});
   }, []);
 
   const handleCriteriaChange = () => {
