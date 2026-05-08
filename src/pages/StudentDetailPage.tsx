@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Card, Button, Typography, Tag, Avatar, Descriptions, Breadcrumb, Spin, Alert } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeftOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchStudentDashboardData } from '../services/studentDashboardService';
 import type { StudentDashboardData } from '../types/studentDashboard';
@@ -68,17 +68,6 @@ export default function StudentDetailPage() {
       </div>
 
       {error && <Alert type="error" message={error} style={{ marginBottom: 16 }} showIcon />}
-
-      {data?.usedMock && !error && (
-        <Alert
-          type="info"
-          icon={<InfoCircleOutlined />}
-          message="Dados simulados — API indisponível. Os gráficos refletem dados de demonstração."
-          style={{ marginBottom: 16 }}
-          showIcon
-          closable
-        />
-      )}
 
       {loading ? (
         <div className="flex items-center justify-center py-24">

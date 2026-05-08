@@ -4,7 +4,6 @@ import {
   TeamOutlined,
   FileTextOutlined,
   CalendarOutlined,
-  ArrowUpOutlined,
   RightOutlined,
   UserOutlined,
   BarChartOutlined,
@@ -22,7 +21,6 @@ const statCards = [
   {
     label: 'Total de Alunos',
     value: MOCK_DASHBOARD_STATS.totalStudents,
-    delta: `+${MOCK_DASHBOARD_STATS.studentsThisMonth} este mês`,
     icon: <TeamOutlined style={{ fontSize: 22, color: '#6C5CE7' }} />,
     bg: '#ede9fe',
     isLink: false,
@@ -30,7 +28,6 @@ const statCards = [
   {
     label: 'Avaliações Realizadas',
     value: MOCK_DASHBOARD_STATS.totalEvaluations,
-    delta: `+${MOCK_DASHBOARD_STATS.evaluationsThisMonth} este mês`,
     icon: <FileTextOutlined style={{ fontSize: 22, color: '#00B894' }} />,
     bg: '#d1fae5',
     isLink: false,
@@ -38,7 +35,6 @@ const statCards = [
   {
     label: 'Exames Hoje',
     value: MOCK_DASHBOARD_STATS.todayExams,
-    delta: 'Ver exames',
     icon: <CalendarOutlined style={{ fontSize: 22, color: '#0984e3' }} />,
     bg: '#dbeafe',
     isLink: true,
@@ -106,20 +102,6 @@ export default function DashboardPage() {
                   >
                     {card.value}
                   </div>
-                  {card.isLink ? (
-                    <a
-                      className="text-xs mt-1 block"
-                      style={{ color: '#6C5CE7' }}
-                      onClick={() => navigate('/exames')}
-                    >
-                      {card.delta}
-                    </a>
-                  ) : (
-                    <div className="flex items-center gap-1 mt-1">
-                      <ArrowUpOutlined style={{ fontSize: 11, color: '#00B894' }} />
-                      <Text style={{ color: '#00B894', fontSize: 12 }}>{card.delta}</Text>
-                    </div>
-                  )}
                 </div>
                 <div
                   style={{

@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Card, Button, Typography, Tag, Descriptions, Breadcrumb, Spin, Alert, Tabs } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeftOutlined, InfoCircleOutlined, ExperimentOutlined, BarChartOutlined, FileTextOutlined } from '@ant-design/icons';
+import {
+  ArrowLeftOutlined,
+  ExperimentOutlined,
+  BarChartOutlined,
+  FileTextOutlined,
+} from '@ant-design/icons';
 import { fetchExamDashboardData } from '../services/examDashboardService';
 import type { ExamDashboardData } from '../types/examDashboard';
 import ExamOverviewCards from '../components/exam-dashboard/ExamOverviewCards';
 import ExamHistogramChart from '../components/exam-dashboard/ExamHistogramChart';
-import ExamRankingChart from '../components/exam-dashboard/ExamRankingChart';
 import ExamCriteriaChart from '../components/exam-dashboard/ExamCriteriaChart';
 import ExamRadarComparison from '../components/exam-dashboard/ExamRadarComparison';
 import ExamStudentsTable from '../components/exam-dashboard/ExamStudentsTable';
@@ -56,20 +60,13 @@ export default function ExamDetailPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {data && <ExamCriteriaChart data={data.criteriaData} />}
-        {data && (
-          <ExamRankingChart
-            data={data.rankingData}
-            approvalCutoff={data.overviewStats.approvalCutoff}
-          />
-        )}
-      </div>
+      {data && <ExamCriteriaChart data={data.criteriaData} />}
 
       {data && (
         <ExamStudentsTable
           data={data.studentsData}
           approvalCutoff={data.overviewStats.approvalCutoff}
+          exam={data.exam}
         />
       )}
     </div>
@@ -125,17 +122,6 @@ export default function ExamDetailPage() {
       </div>
 
       {error && <Alert type="error" message={error} style={{ marginBottom: 16 }} showIcon />}
-
-      {data?.usedMock && !error && (
-        <Alert
-          type="info"
-          icon={<InfoCircleOutlined />}
-          message="Dados simulados — API indisponível."
-          style={{ marginBottom: 16 }}
-          showIcon
-          closable
-        />
-      )}
 
       {loading ? (
         <div className="flex items-center justify-center py-24">

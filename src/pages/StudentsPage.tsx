@@ -1,13 +1,5 @@
 import { useState } from 'react';
-import {
-  Card,
-  Button,
-  Input,
-  Typography,
-  Tag,
-  Avatar,
-  Tooltip,
-} from 'antd';
+import { Card, Button, Input, Typography, Tag, Avatar, Tooltip } from 'antd';
 import ResponsiveTable from '../components/ResponsiveTable';
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';

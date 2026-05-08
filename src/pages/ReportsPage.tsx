@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Select, Typography, Spin, Alert } from 'antd';
-import { fetchSemesterDashboardData, AVAILABLE_SEMESTERS } from '../services/semesterDashboardService';
+import {
+  fetchSemesterDashboardData,
+  AVAILABLE_SEMESTERS,
+} from '../services/semesterDashboardService';
 import type { SemesterDashboardData } from '../types/semesterDashboard';
 import SemesterOverviewCards from '../components/semester-dashboard/SemesterOverviewCards';
 import SemesterEvaluationsChart from '../components/semester-dashboard/SemesterEvaluationsChart';
@@ -24,10 +27,18 @@ export default function ReportsPage() {
     setLoading(true);
     setError(null);
     fetchSemesterDashboardData(semester)
-      .then((d) => { if (!cancelled) setData(d); })
-      .catch(() => { if (!cancelled) setError('Erro ao carregar dados do semestre.'); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
+      .then((d) => {
+        if (!cancelled) setData(d);
+      })
+      .catch(() => {
+        if (!cancelled) setError('Erro ao carregar dados do semestre.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [semester]);
 
   return (
@@ -48,15 +59,6 @@ export default function ReportsPage() {
       </div>
 
       {error && <Alert type="error" message={error} style={{ marginBottom: 16 }} />}
-
-      {data?.usedMock && (
-        <Alert
-          type="warning"
-          message="Usando dados de demonstração (API indisponível)"
-          style={{ marginBottom: 16 }}
-          showIcon
-        />
-      )}
 
       {loading ? (
         <div className="flex justify-center items-center" style={{ minHeight: 400 }}>

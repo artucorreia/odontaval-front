@@ -72,7 +72,7 @@ export default function AppLayout() {
           }}
         >
           <div className="bg-primary rounded-lg w-12 h-12 flex items-center justify-center">
-            <img src={LogoWhite} className="size-10" />
+            <img src={LogoWhite} className="size-9" />
           </div>
           {!collapsed && <span className="brand-name">ODONTAVAL</span>}
         </div>

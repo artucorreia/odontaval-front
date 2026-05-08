@@ -1,31 +1,36 @@
-import { Card, Table, Tag, Button, Empty, Tooltip, Progress } from 'antd';
+import { useState } from 'react';
+import { Card, Table, Tag, Button, Empty, Tooltip } from 'antd';
 import { EyeOutlined, TrophyOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
 import type { ColumnsType } from 'antd/es/table';
 import type { ExamStudentRecord } from '../../types/examDashboard';
+import type { EvaluationRecord } from '../exam-evaluations/types';
+import type { Exam } from '../../types';
+import EvaluationDetailsModal from '../exam-evaluations/EvaluationDetailsModal';
 
 interface Props {
   data: ExamStudentRecord[];
   approvalCutoff?: number;
+  exam?: Exam | null;
 }
 
-const CRITERIA = [
-  { key: 'punctuality' as const, label: 'Pontualidade' },
-  { key: 'instrumental' as const, label: 'Instrumental' },
-  { key: 'organizationOfServiceUnit' as const, label: 'Organização' },
-  { key: 'biosecurity' as const, label: 'Biossegurança' },
-  { key: 'ethics' as const, label: 'Ética' },
-];
-
-function scoreColor(v: number): string {
-  if (v >= 8.5) return '#00B894';
-  if (v >= 7) return '#6C5CE7';
-  if (v >= 5) return '#FDCB6E';
-  return '#E17055';
+function toEvalRecord(record: ExamStudentRecord, examId: number): EvaluationRecord {
+  return {
+    id: record.evaluationId,
+    studentId: record.studentId,
+    studentName: record.studentName,
+    examId,
+    concept: record.concept,
+    punctuality: record.punctuality,
+    instrumental: record.instrumental,
+    organizationOfServiceUnit: record.organizationOfServiceUnit,
+    biosecurity: record.biosecurity,
+    ethics: record.ethics,
+    observations: record.observations,
+  };
 }
 
-export default function ExamStudentsTable({ data, approvalCutoff = 7.0 }: Props) {
-  const navigate = useNavigate();
+export default function ExamStudentsTable({ data, approvalCutoff = 7.0, exam = null }: Props) {
+  const [viewTarget, setViewTarget] = useState<EvaluationRecord | null>(null);
 
   const columns: ColumnsType<ExamStudentRecord> = [
     {
@@ -90,43 +95,12 @@ export default function ExamStudentsTable({ data, approvalCutoff = 7.0 }: Props)
             size="small"
             icon={<EyeOutlined />}
             style={{ color: '#6C5CE7' }}
-            onClick={() => navigate(`/avaliacoes/${record.evaluationId}`)}
+            onClick={() => setViewTarget(toEvalRecord(record, exam?.id ?? 0))}
           />
         </Tooltip>
       ),
     },
   ];
-
-  const expandedRowRender = (record: ExamStudentRecord) => (
-    <div style={{ padding: '10px 16px', background: '#fafafa', borderRadius: 6 }}>
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        {CRITERIA.map(({ key, label }) => {
-          const value = record[key];
-          return (
-            <div key={key}>
-              <div style={{ fontSize: 11, color: '#636E72', marginBottom: 4 }}>{label}</div>
-              <Progress
-                percent={value * 10}
-                showInfo={false}
-                strokeColor={scoreColor(value)}
-                trailColor="#f0f0f0"
-                strokeWidth={6}
-                style={{ marginBottom: 2 }}
-              />
-              <div style={{ fontWeight: 700, color: scoreColor(value), fontSize: 13 }}>
-                {value.toFixed(1)}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-      {record.observations && (
-        <div style={{ marginTop: 10, fontSize: 12, color: '#636E72', fontStyle: 'italic' }}>
-          "{record.observations}"
-        </div>
-      )}
-    </div>
-  );
 
   return (
     <Card
@@ -142,10 +116,16 @@ export default function ExamStudentsTable({ data, approvalCutoff = 7.0 }: Props)
           rowKey="evaluationId"
           size="small"
           pagination={false}
-          expandable={{ expandedRowRender, expandRowByClick: false }}
           scroll={{ x: 400 }}
         />
       )}
+
+      <EvaluationDetailsModal
+        evaluation={viewTarget}
+        exam={exam}
+        open={viewTarget !== null}
+        onClose={() => setViewTarget(null)}
+      />
     </Card>
   );
 }

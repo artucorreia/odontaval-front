@@ -1,11 +1,12 @@
+import dayjs from 'dayjs';
 import { UserOutlined, MedicineBoxOutlined, FileTextOutlined } from '@ant-design/icons';
-import { Badge, Tag } from 'antd';
+import { Tag } from 'antd';
 import type { AgendaExam, ExamStatus } from '../../types/agenda';
 
-const STATUS_CONFIG: Record<ExamStatus, { label: string; color: 'processing' | 'warning' | 'success' }> = {
-  scheduled: { label: 'Agendado', color: 'processing' },
-  in_progress: { label: 'Em andamento', color: 'warning' },
-  completed: { label: 'Concluído', color: 'success' },
+const STATUS_CONFIG: Record<ExamStatus, { label: string; color: string }> = {
+  scheduled:   { label: 'Agendado',      color: 'blue' },
+  in_progress: { label: 'Em Andamento',  color: 'orange' },
+  completed:   { label: 'Concluído',     color: 'green' },
 };
 
 const SPECIALISM_COLORS: Record<number, string> = {
@@ -17,12 +18,20 @@ const SPECIALISM_COLORS: Record<number, string> = {
   6: 'cyan',
 };
 
+function getStatus(date: string): ExamStatus {
+  const today = dayjs().startOf('day');
+  const examDate = dayjs(date).startOf('day');
+  if (examDate.isBefore(today)) return 'completed';
+  if (examDate.isSame(today)) return 'in_progress';
+  return 'scheduled';
+}
+
 interface AgendaExamCardProps {
   exam: AgendaExam;
 }
 
 export default function AgendaExamCard({ exam }: AgendaExamCardProps) {
-  const statusConfig = exam.status ? STATUS_CONFIG[exam.status] : null;
+  const statusConfig = STATUS_CONFIG[getStatus(exam.date)];
   const specialismColor = SPECIALISM_COLORS[exam.specialismId] ?? 'default';
 
   return (
@@ -43,9 +52,9 @@ export default function AgendaExamCard({ exam }: AgendaExamCardProps) {
         <span style={{ fontWeight: 600, color: '#2D3436', fontSize: 14, lineHeight: '1.4', flex: 1 }}>
           {exam.title}
         </span>
-        {statusConfig && (
-          <Badge status={statusConfig.color} text={statusConfig.label} style={{ whiteSpace: 'nowrap', fontSize: 12 }} />
-        )}
+        <Tag color={statusConfig.color} style={{ whiteSpace: 'nowrap', margin: 0, fontSize: 12 }}>
+          {statusConfig.label}
+        </Tag>
       </div>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>

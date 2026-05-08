@@ -16,7 +16,14 @@ import {
 } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import ResponsiveTable from '../components/ResponsiveTable';
-import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, BarChartOutlined } from '@ant-design/icons';
+import {
+  PlusOutlined,
+  SearchOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  BarChartOutlined,
+  EyeOutlined,
+} from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { MOCK_EXAMS, MOCK_SPECIALISMS } from '../utils/mockData';
 import type { Exam } from '../types';
@@ -103,7 +110,7 @@ export default function ExamsPage() {
           <Tooltip title="Ver Dashboard">
             <Button
               type="text"
-              icon={<BarChartOutlined style={{ color: '#6C5CE7' }} />}
+              icon={<EyeOutlined style={{ color: '#6C5CE7' }} />}
               onClick={() => navigate(`/exames/${r.id}`)}
             />
           </Tooltip>
@@ -156,7 +163,12 @@ export default function ExamsPage() {
             style={{ maxWidth: 360, borderRadius: 8 }}
           />
         </div>
-        <ResponsiveTable columns={columns} dataSource={filtered} rowKey="id" pagination={{ pageSize: 10 }} />
+        <ResponsiveTable
+          columns={columns}
+          dataSource={filtered}
+          rowKey="id"
+          pagination={{ pageSize: 10 }}
+        />
       </Card>
 
       <Modal
@@ -190,7 +202,7 @@ export default function ExamsPage() {
           </Form.Item>
           <Form.Item label="Semestre Letivo" name="academicSemester" rules={[{ required: true }]}>
             <Select>
-              {['2025.1', '2025.2', '2024.2'].map((s) => (
+              {['2025.2', '2026.1', '2026.2', '2027.1'].map((s) => (
                 <Select.Option key={s} value={s}>
                   {s}
                 </Select.Option>

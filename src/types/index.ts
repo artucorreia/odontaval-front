@@ -1,3 +1,5 @@
+export type RoleName = 'ADMIN' | 'PROFESSOR' | 'STUDENT';
+
 export interface User {
   id: string;
   name: string;
@@ -8,7 +10,7 @@ export interface User {
 
 export interface Role {
   id: number;
-  name: 'ADMIN' | 'PROFESSOR' | 'STUDENT';
+  name: RoleName;
 }
 
 export interface Specialism {
@@ -54,11 +56,8 @@ export interface AuthResponse {
   code: number;
   data: {
     userId: string;
+    userRole: RoleName;
     token: string;
-    role: {
-      id: number;
-      name: string;
-    };
   };
 }
 

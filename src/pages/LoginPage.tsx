@@ -15,11 +15,10 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const res = await authService.login(values.email, values.password);
-      const { token, userId, role } = res.data.data;
-      const roleName = role.name as 'PROFESSOR' | 'STUDENT';
-      login(token, userId, roleName);
+      const { token, userId, userRole } = res.data.data;
+      login(token, userId, userRole);
       message.success('Login realizado com sucesso!');
-      navigate(roleName === 'STUDENT' ? '/alunos/me' : '/dashboard');
+      navigate(userRole === 'STUDENT' ? '/alunos/me' : '/dashboard');
     } catch {
       message.error('E-mail ou senha inválidos.');
     } finally {
@@ -63,7 +62,7 @@ export default function LoginPage() {
                 name="password"
                 rules={[
                   { required: true, message: 'Informe sua senha' },
-                  { min: 5, message: 'A senha deve ter no mínimo 5 caracteres' },
+                  { min: 8, message: 'A senha deve ter no mínimo 8 caracteres' },
                 ]}
               >
                 <Input.Password

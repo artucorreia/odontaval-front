@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Button, Alert, Spin, message } from 'antd';
-import { PlusOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { Button, Spin, message } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import type { Exam, Evaluation } from '../../types';
 import type { EvaluationRecord, CreateEvaluationValues, EditEvaluationValues } from './types';
 import { evaluationService } from '../../services/api';
@@ -109,9 +109,7 @@ export default function ExamEvaluationsSection({ examId, exam }: Props) {
     setEditLoading(true);
     try {
       if (isMock) {
-        setEvaluations((prev) =>
-          prev.map((e) => (e.id === id ? { ...e, ...values } : e)),
-        );
+        setEvaluations((prev) => prev.map((e) => (e.id === id ? { ...e, ...values } : e)));
         message.success('Avaliação atualizada com sucesso!');
       } else {
         await evaluationService.update(id, values);
@@ -140,23 +138,10 @@ export default function ExamEvaluationsSection({ examId, exam }: Props) {
     }
   };
 
-  const examForContext =
-    exam ??
-    (MOCK_EXAMS.find((x) => x.id === examId) ?? null);
+  const examForContext = exam ?? MOCK_EXAMS.find((x) => x.id === examId) ?? null;
 
   return (
     <div>
-      {isMock && (
-        <Alert
-          type="info"
-          icon={<InfoCircleOutlined />}
-          message="Dados simulados — API indisponível. Operações de CRUD funcionam em memória."
-          style={{ marginBottom: 16 }}
-          showIcon
-          closable
-        />
-      )}
-
       <div className="flex items-center justify-between mb-4">
         <div style={{ fontSize: 13, color: '#636E72' }}>
           {evaluations.length} avaliação{evaluations.length !== 1 ? 'ões' : ''} neste exame

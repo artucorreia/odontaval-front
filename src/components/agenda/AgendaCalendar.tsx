@@ -1,4 +1,7 @@
+import { Button, Select } from 'antd';
+import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { Calendar } from 'antd';
+import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 import type { DateExamsMap } from '../../types/agenda';
 
@@ -8,6 +11,14 @@ interface AgendaCalendarProps {
   onDateSelect: (date: Dayjs) => void;
   onPanelChange: (value: Dayjs) => void;
 }
+
+const MONTHS = [
+  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+];
+
+const CURRENT_YEAR = dayjs().year();
+const YEARS = Array.from({ length: 11 }, (_, i) => CURRENT_YEAR - 5 + i);
 
 export default function AgendaCalendar({
   dateExamsMap,
@@ -38,9 +49,56 @@ export default function AgendaCalendar({
     );
   };
 
+  const headerRender = ({ value, onChange }: { value: Dayjs; onChange: (date: Dayjs) => void }) => {
+    const goTo = (date: Dayjs) => {
+      onChange(date);
+      onPanelChange(date);
+    };
+
+    return (
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '12px 16px',
+          gap: 8,
+        }}
+      >
+        <Button
+          type="text"
+          icon={<LeftOutlined />}
+          onClick={() => goTo(value.subtract(1, 'month'))}
+        />
+
+        <div style={{ display: 'flex', gap: 8, flex: 1, justifyContent: 'center' }}>
+          <Select
+            value={value.month()}
+            onChange={(month) => goTo(value.month(month))}
+            style={{ width: 130 }}
+            options={MONTHS.map((label, index) => ({ label, value: index }))}
+          />
+          <Select
+            value={value.year()}
+            onChange={(year) => goTo(value.year(year))}
+            style={{ width: 90 }}
+            options={YEARS.map((year) => ({ label: year, value: year }))}
+          />
+        </div>
+
+        <Button
+          type="text"
+          icon={<RightOutlined />}
+          onClick={() => goTo(value.add(1, 'month'))}
+        />
+      </div>
+    );
+  };
+
   return (
     <Calendar
       value={panelDate}
+      mode="month"
       onSelect={(date, info) => {
         if (info.source === 'date') {
           onDateSelect(date);
@@ -48,6 +106,7 @@ export default function AgendaCalendar({
       }}
       onPanelChange={onPanelChange}
       cellRender={cellRender}
+      headerRender={headerRender}
       fullscreen
     />
   );
