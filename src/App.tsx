@@ -8,6 +8,7 @@ import StudentRoute from './components/StudentRoute';
 import AppLayout from './components/AppLayout';
 import StudentLayout from './components/StudentLayout';
 import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import StudentsPage from './pages/StudentsPage';
 import StudentDetailPage from './pages/StudentDetailPage';
@@ -32,6 +33,7 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
 
             {/* Professor area — full layout, blocked for STUDENT */}
             <Route

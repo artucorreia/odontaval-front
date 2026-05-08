@@ -129,7 +129,18 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <p className="text-center text-xs text-muted mt-6">
+        <p className="text-center text-sm text-muted mt-4">
+          Não tem uma conta?{' '}
+          <button
+            onClick={() => navigate('/register')}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            className="text-primary hover:text-primary-dark font-medium"
+          >
+            Cadastre-se
+          </button>
+        </p>
+
+        <p className="text-center text-xs text-muted mt-3">
           © 2025 ODONTAVAL. Todos os direitos reservados.
         </p>
       </div>
