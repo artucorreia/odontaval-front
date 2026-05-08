@@ -1,5 +1,4 @@
 export interface SemesterKPIs {
-  totalExams: number;
   totalEvaluations: number;
   totalStudents: number;
   totalProfessors: number;

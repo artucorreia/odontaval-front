@@ -1,40 +1,48 @@
 import type { User } from './index';
 
+// Criteria keys match the Evaluation fields (penalty values: 0 to -10)
 export type CriterionKey =
   | 'punctuality'
   | 'instrumental'
-  | 'organizationOfServiceUnit'
+  | 'boxOrganization'
   | 'biosecurity'
-  | 'ethics';
+  | 'ethics'
+  | 'concept';
 
 export const CRITERIA_LABELS: Record<CriterionKey, string> = {
   punctuality: 'Pontualidade',
   instrumental: 'Instrumental',
-  organizationOfServiceUnit: 'Organização',
+  boxOrganization: 'Organização do Box',
   biosecurity: 'Biossegurança',
   ethics: 'Ética',
+  concept: 'Conceito',
 };
 
+// Evaluation enriched with resolved specialism/professor names
 export interface EnrichedEvaluation {
   id: number;
+  title: string;
   date: string;
-  examTitle: string;
+  evaluationNumber: string;
+  academicSemester: string;
   specialismName: string;
   specialismId: number;
   professorName: string;
-  concept: number;
+  // criteria (0 to -10, penalties)
   punctuality: number;
   instrumental: number;
-  organizationOfServiceUnit: number;
+  boxOrganization: number;
   biosecurity: number;
   ethics: number;
+  concept: number;
+  // final grade (0 to 10)
+  grade: number;
   observations?: string;
-  examId: number;
   studentId: string;
 }
 
 export interface StudentOverviewStats {
-  avgConcept: number;
+  avgGrade: number;
   totalEvaluations: number;
   bestCriterion: { label: string; value: number };
   worstCriterion: { label: string; value: number };
@@ -44,13 +52,14 @@ export interface StudentOverviewStats {
 
 export interface RadarDatum {
   subject: string;
+  // display value 0-10 (converted: 10 + penalty)
   value: number;
   fullMark: number;
 }
 
 export interface ProgressDatum {
   date: string;
-  concept: number;
+  grade: number;
 }
 
 export interface SpecialtyDatum {

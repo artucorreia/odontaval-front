@@ -1,18 +1,12 @@
-import { useState } from 'react';
-import { Card, Table, Tag, Button, Empty, Tooltip } from 'antd';
-import { EyeOutlined } from '@ant-design/icons';
+import { Card, Table, Tag, Empty } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { EnrichedEvaluation } from '../../types/studentDashboard';
-import type { EvaluationRecord } from '../exam-evaluations/types';
-import type { Exam } from '../../types';
-import EvaluationDetailsModal from '../exam-evaluations/EvaluationDetailsModal';
 
 interface Props {
   data: EnrichedEvaluation[];
-  studentName?: string;
 }
 
-function conceptTag(value: number) {
+function gradeTag(value: number) {
   const color = value >= 9 ? 'success' : value >= 7 ? 'purple' : value >= 5 ? 'warning' : 'error';
   return (
     <Tag color={color} style={{ fontWeight: 700, fontSize: 14, padding: '2px 10px' }}>
@@ -21,47 +15,7 @@ function conceptTag(value: number) {
   );
 }
 
-function toEvalRecord(e: EnrichedEvaluation, studentName: string): EvaluationRecord {
-  return {
-    id: e.id,
-    studentId: e.studentId,
-    studentName,
-    examId: e.examId,
-    concept: e.concept,
-    punctuality: e.punctuality,
-    instrumental: e.instrumental,
-    organizationOfServiceUnit: e.organizationOfServiceUnit,
-    biosecurity: e.biosecurity,
-    ethics: e.ethics,
-    observations: e.observations,
-  };
-}
-
-function toPartialExam(e: EnrichedEvaluation): Exam {
-  return {
-    id: e.examId,
-    title: e.examTitle,
-    date: e.date,
-    academicSemester: '',
-    goals: '',
-    serviceUnit: '',
-    procedurePerformed: '',
-    professorId: '',
-    specialismId: e.specialismId,
-    specialism: { id: e.specialismId, name: e.specialismName },
-    professor: e.professorName ? { id: '', name: e.professorName, email: '', roles: [] } : undefined,
-  };
-}
-
-export default function StudentEvaluationTable({ data, studentName = '—' }: Props) {
-  const [viewTarget, setViewTarget] = useState<EvaluationRecord | null>(null);
-  const [viewExam, setViewExam] = useState<Exam | null>(null);
-
-  const handleView = (record: EnrichedEvaluation) => {
-    setViewTarget(toEvalRecord(record, studentName));
-    setViewExam(toPartialExam(record));
-  };
-
+export default function StudentEvaluationTable({ data }: Props) {
   const sorted = [...data].sort(
     (a, b) => new Date(b.date || '').getTime() - new Date(a.date || '').getTime(),
   );
@@ -82,6 +36,13 @@ export default function StudentEvaluationTable({ data, studentName = '—' }: Pr
           : '-',
     },
     {
+      title: 'Período',
+      dataIndex: 'evaluationNumber',
+      key: 'evaluationNumber',
+      width: 80,
+      render: (v: string) => <Tag color="purple">{v}</Tag>,
+    },
+    {
       title: 'Especialidade',
       dataIndex: 'specialismName',
       key: 'specialismName',
@@ -90,8 +51,8 @@ export default function StudentEvaluationTable({ data, studentName = '—' }: Pr
     },
     {
       title: 'Avaliação',
-      dataIndex: 'examTitle',
-      key: 'examTitle',
+      dataIndex: 'title',
+      key: 'title',
       ellipsis: true,
       responsive: ['md'],
     },
@@ -105,30 +66,13 @@ export default function StudentEvaluationTable({ data, studentName = '—' }: Pr
       ),
     },
     {
-      title: 'Conceito',
-      dataIndex: 'concept',
-      key: 'concept',
+      title: 'Nota',
+      dataIndex: 'grade',
+      key: 'grade',
       align: 'center',
       width: 90,
-      render: (value: number) => conceptTag(value),
-      sorter: (a, b) => a.concept - b.concept,
-    },
-    {
-      title: '',
-      key: 'actions',
-      width: 60,
-      align: 'center',
-      render: (_, record) => (
-        <Tooltip title="Ver detalhes">
-          <Button
-            type="text"
-            size="small"
-            icon={<EyeOutlined />}
-            onClick={() => handleView(record)}
-            style={{ color: '#6C5CE7' }}
-          />
-        </Tooltip>
-      ),
+      render: (value: number) => gradeTag(value),
+      sorter: (a, b) => a.grade - b.grade,
     },
   ];
 
@@ -149,16 +93,6 @@ export default function StudentEvaluationTable({ data, studentName = '—' }: Pr
           scroll={{ x: 400 }}
         />
       )}
-
-      <EvaluationDetailsModal
-        evaluation={viewTarget}
-        exam={viewExam}
-        open={viewTarget !== null}
-        onClose={() => {
-          setViewTarget(null);
-          setViewExam(null);
-        }}
-      />
     </Card>
   );
 }

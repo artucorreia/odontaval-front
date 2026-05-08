@@ -3,73 +3,86 @@ import { Card, Row, Col, Typography, Button, Avatar, List, Spin, Tag } from 'ant
 import {
   TeamOutlined,
   FileTextOutlined,
-  CalendarOutlined,
+  ArrowUpOutlined,
   RightOutlined,
   UserOutlined,
   BarChartOutlined,
-  ExperimentOutlined,
+  FormOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { examService } from '../services/api';
-import type { Exam } from '../types';
-import { MOCK_DASHBOARD_STATS, MOCK_EXAMS } from '../utils/mockData';
+import { evaluationService, dashboardService } from '../services/api';
+import type { Evaluation } from '../types';
+import { MOCK_DASHBOARD_STATS, MOCK_EVALUATIONS } from '../utils/mockData';
 
 const { Title, Text } = Typography;
-
-const statCards = [
-  {
-    label: 'Total de Alunos',
-    value: MOCK_DASHBOARD_STATS.totalStudents,
-    icon: <TeamOutlined style={{ fontSize: 22, color: '#6C5CE7' }} />,
-    bg: '#ede9fe',
-    isLink: false,
-  },
-  {
-    label: 'Avaliações Realizadas',
-    value: MOCK_DASHBOARD_STATS.totalEvaluations,
-    icon: <FileTextOutlined style={{ fontSize: 22, color: '#00B894' }} />,
-    bg: '#d1fae5',
-    isLink: false,
-  },
-  {
-    label: 'Exames Hoje',
-    value: MOCK_DASHBOARD_STATS.todayExams,
-    icon: <CalendarOutlined style={{ fontSize: 22, color: '#0984e3' }} />,
-    bg: '#dbeafe',
-    isLink: true,
-  },
-];
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [recentExams, setRecentExams] = useState<Exam[]>([]);
-  const [loadingExams, setLoadingExams] = useState(true);
+  const [recentEvaluations, setRecentEvaluations] = useState<Evaluation[]>([]);
+  const [loadingEvaluations, setLoadingEvaluations] = useState(true);
+  const [stats, setStats] = useState(MOCK_DASHBOARD_STATS);
 
   const firstName = user?.name?.split(' ')[0] ?? 'Usuário';
 
   useEffect(() => {
-    examService
+    dashboardService
+      .getStats()
+      .then((res) => {
+        if (res.data?.data) setStats(res.data.data);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    evaluationService
       .findAll()
       .then((res) => {
-        const exams: Exam[] = res.data?.data ?? [];
-        if (exams.length === 0) throw new Error('empty');
-        setRecentExams(
-          [...exams]
+        const evaluations: Evaluation[] = res.data?.data ?? [];
+        if (evaluations.length === 0) throw new Error('empty');
+        setRecentEvaluations(
+          [...evaluations]
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
             .slice(0, 5),
         );
       })
       .catch(() =>
-        setRecentExams(
-          [...MOCK_EXAMS]
+        setRecentEvaluations(
+          [...MOCK_EVALUATIONS]
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
             .slice(0, 5),
         ),
       )
-      .finally(() => setLoadingExams(false));
+      .finally(() => setLoadingEvaluations(false));
   }, []);
+
+  const statCards = [
+    {
+      label: 'Total de Alunos',
+      value: stats.totalStudents,
+      delta: `+${stats.studentsThisMonth} este mês`,
+      icon: <TeamOutlined style={{ fontSize: 22, color: '#6C5CE7' }} />,
+      bg: '#ede9fe',
+      onClick: undefined,
+    },
+    {
+      label: 'Avaliações Realizadas',
+      value: stats.totalEvaluations,
+      delta: `+${stats.evaluationsThisMonth} este mês`,
+      icon: <FileTextOutlined style={{ fontSize: 22, color: '#00B894' }} />,
+      bg: '#d1fae5',
+      onClick: undefined,
+    },
+    {
+      label: 'Avaliações Pendentes',
+      value: stats.pendingEvaluations,
+      delta: 'Ver avaliações',
+      icon: <FormOutlined style={{ fontSize: 22, color: '#0984e3' }} />,
+      bg: '#dbeafe',
+      onClick: () => navigate('/avaliacoes'),
+    },
+  ];
 
   return (
     <div>
@@ -102,6 +115,20 @@ export default function DashboardPage() {
                   >
                     {card.value}
                   </div>
+                  {card.onClick ? (
+                    <a
+                      className="text-xs mt-1 block"
+                      style={{ color: '#6C5CE7' }}
+                      onClick={card.onClick}
+                    >
+                      {card.delta}
+                    </a>
+                  ) : (
+                    <div className="flex items-center gap-1 mt-1">
+                      <ArrowUpOutlined style={{ fontSize: 11, color: '#00B894' }} />
+                      <Text style={{ color: '#00B894', fontSize: 12 }}>{card.delta}</Text>
+                    </div>
+                  )}
                 </div>
                 <div
                   style={{
@@ -125,7 +152,7 @@ export default function DashboardPage() {
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={16}>
           <Card
-            title={<span className="font-semibold text-secondary">Exames Recentes</span>}
+            title={<span className="font-semibold text-secondary">Avaliações Recentes</span>}
             style={{ borderRadius: 12, border: '1px solid #f0f0f0' }}
             bodyStyle={{ padding: 0 }}
             extra={
@@ -133,67 +160,65 @@ export default function DashboardPage() {
                 type="link"
                 size="small"
                 style={{ color: '#6C5CE7', padding: 0 }}
-                onClick={() => navigate('/exames')}
+                onClick={() => navigate('/avaliacoes')}
               >
-                Ver todos <RightOutlined />
+                Ver todas <RightOutlined />
               </Button>
             }
           >
-            {loadingExams ? (
+            {loadingEvaluations ? (
               <div className="flex justify-center py-8">
                 <Spin />
               </div>
             ) : (
               <List
-                dataSource={recentExams}
-                locale={{ emptyText: 'Nenhum exame encontrado' }}
-                renderItem={(exam) => (
+                dataSource={recentEvaluations}
+                locale={{ emptyText: 'Nenhuma avaliação encontrada' }}
+                renderItem={(evaluation) => (
                   <List.Item
                     style={{
                       padding: '14px 24px',
                       borderBottom: '1px solid #f9f9f9',
                       cursor: 'pointer',
                     }}
-                    onClick={() => navigate(`/exames/${exam.id}`)}
-                    actions={[
-                      <Button
-                        size="small"
-                        style={{ borderColor: '#6C5CE7', color: '#6C5CE7', borderRadius: 6 }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/exames/${exam.id}`);
-                        }}
-                      >
-                        Ver
-                      </Button>,
-                    ]}
+                    onClick={() => navigate('/avaliacoes')}
                   >
                     <List.Item.Meta
                       avatar={
                         <Avatar
                           style={{ background: '#ede9fe' }}
-                          icon={<ExperimentOutlined style={{ color: '#6C5CE7' }} />}
+                          icon={<FormOutlined style={{ color: '#6C5CE7' }} />}
                           size={38}
                         />
                       }
                       title={
                         <Text style={{ fontSize: 13.5, color: '#2D3436', fontWeight: 600 }}>
-                          {exam.title}
+                          {evaluation.title}
                         </Text>
                       }
                       description={
                         <div className="flex items-center gap-2 flex-wrap">
                           <Text style={{ fontSize: 12, color: '#636E72' }}>
-                            {new Date(exam.date + 'T12:00:00').toLocaleDateString('pt-BR')}
+                            {new Date(evaluation.date + 'T12:00:00').toLocaleDateString('pt-BR')}
                           </Text>
-                          {exam.academicSemester && (
-                            <Tag color="purple" style={{ fontSize: 11, borderRadius: 4 }}>
-                              {exam.academicSemester}
-                            </Tag>
-                          )}
+                          <Tag color="purple" style={{ fontSize: 11, borderRadius: 4 }}>
+                            {evaluation.evaluationNumber}
+                          </Tag>
+                          <Tag style={{ fontSize: 11, borderRadius: 4 }}>
+                            {evaluation.academicSemester}
+                          </Tag>
                         </div>
                       }
                     />
+                    <div
+                      style={{
+                        fontWeight: 700,
+                        fontSize: 18,
+                        color: evaluation.grade >= 7 ? '#00B894' : evaluation.grade >= 5 ? '#e17055' : '#d63031',
+                      }}
+                    >
+                      {evaluation.grade.toFixed(1)}
+                    </div>
                   </List.Item>
                 )}
               />
@@ -212,13 +237,13 @@ export default function DashboardPage() {
             <div className="flex flex-col gap-3">
               <Button
                 type="primary"
-                icon={<ExperimentOutlined />}
+                icon={<FormOutlined />}
                 block
                 size="large"
                 style={{ background: '#6C5CE7', borderColor: '#6C5CE7', borderRadius: 8 }}
-                onClick={() => navigate('/exames')}
+                onClick={() => navigate('/avaliacoes/nova')}
               >
-                Ir para Exames
+                Nova Avaliação
               </Button>
               <Button
                 icon={<UserOutlined />}

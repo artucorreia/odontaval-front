@@ -5,7 +5,6 @@ import {
   BarChartOutlined,
   CheckCircleOutlined,
   UserSwitchOutlined,
-  ExperimentOutlined,
 } from '@ant-design/icons';
 import type { SemesterKPIs } from '../../types/semesterDashboard';
 
@@ -18,15 +17,6 @@ export default function SemesterOverviewCards({ kpis }: Props) {
     kpis.approvalRate >= 80 ? '#00B894' : kpis.approvalRate >= 60 ? '#FDCB6E' : '#E17055';
 
   const cards = [
-    {
-      title: 'Exames Realizados',
-      value: kpis.totalExams,
-      suffix: undefined,
-      precision: 0,
-      icon: <ExperimentOutlined style={{ fontSize: 20, color: '#0984E3' }} />,
-      bg: '#0984E315',
-      tooltip: 'Total de exames clínicos no semestre',
-    },
     {
       title: 'Avaliações',
       value: kpis.totalEvaluations,
@@ -75,7 +65,7 @@ export default function SemesterOverviewCards({ kpis }: Props) {
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
+    <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
       {cards.map((card) => (
         <Tooltip key={card.title} title={card.tooltip}>
           <Card

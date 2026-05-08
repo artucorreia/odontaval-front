@@ -11,9 +11,8 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import StudentsPage from './pages/StudentsPage';
 import StudentDetailPage from './pages/StudentDetailPage';
-import ExamsPage from './pages/ExamsPage';
-import ExamDetailPage from './pages/ExamDetailPage';
-import AgendaPage from './pages/AgendaPage';
+import EvaluationsPage from './pages/EvaluationsPage';
+import NewEvaluationPage from './pages/NewEvaluationPage';
 import ReportsPage from './pages/ReportsPage';
 
 const theme = {
@@ -34,7 +33,7 @@ export default function App() {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
 
-            {/* Professor area — full layout, blocked for ALUNO */}
+            {/* Professor area — full layout, blocked for STUDENT */}
             <Route
               path="/"
               element={
@@ -49,9 +48,8 @@ export default function App() {
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="alunos" element={<StudentsPage />} />
               <Route path="alunos/:id" element={<StudentDetailPage />} />
-              <Route path="exames" element={<ExamsPage />} />
-              <Route path="exames/:id" element={<ExamDetailPage />} />
-              <Route path="agenda" element={<AgendaPage />} />
+              <Route path="avaliacoes" element={<EvaluationsPage />} />
+              <Route path="avaliacoes/nova" element={<NewEvaluationPage />} />
               <Route path="relatorios" element={<ReportsPage />} />
             </Route>
 

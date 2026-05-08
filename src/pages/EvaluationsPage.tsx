@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Card,
   Button,
@@ -14,84 +14,100 @@ import ResponsiveTable from '../components/ResponsiveTable';
 import {
   PlusOutlined,
   SearchOutlined,
-  EyeOutlined,
-  EditOutlined,
   DeleteOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useNavigate } from 'react-router-dom';
+import { evaluationService } from '../services/api';
 import { MOCK_EVALUATIONS } from '../utils/mockData';
 import type { Evaluation } from '../types';
 
 const { Title, Text } = Typography;
 
-const conceptColor = (v: number) => {
-  if (v >= 9) return { bg: '#d1fae5', text: '#065f46' };
-  if (v >= 7) return { bg: '#fef3c7', text: '#92400e' };
+const gradeColor = (grade: number) => {
+  if (grade >= 7) return { bg: '#d1fae5', text: '#065f46' };
+  if (grade >= 5) return { bg: '#fef3c7', text: '#92400e' };
   return { bg: '#fee2e2', text: '#991b1b' };
 };
 
 export default function EvaluationsPage() {
   const [search, setSearch] = useState('');
-  const [evaluations, setEvaluations] = useState<Evaluation[]>(MOCK_EVALUATIONS);
+  const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    evaluationService
+      .findAll()
+      .then((res) => {
+        const data: Evaluation[] = res.data?.data ?? [];
+        setEvaluations(data.length > 0 ? data : MOCK_EVALUATIONS);
+      })
+      .catch(() => setEvaluations(MOCK_EVALUATIONS))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered = evaluations.filter(
     (e) =>
-      e.student?.name.toLowerCase().includes(search.toLowerCase()) ||
-      e.exam?.title?.toLowerCase().includes(search.toLowerCase()) ||
-      e.exam?.specialism?.name.toLowerCase().includes(search.toLowerCase()),
+      e.title.toLowerCase().includes(search.toLowerCase()) ||
+      e.evaluationNumber.toLowerCase().includes(search.toLowerCase()) ||
+      e.academicSemester.toLowerCase().includes(search.toLowerCase()) ||
+      e.procedurePerformed.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const handleDelete = (id: number) => {
-    setEvaluations(evaluations.filter((e) => e.id !== id));
-    message.success('Avaliação removida com sucesso!');
+  const handleDelete = async (id: number) => {
+    try {
+      await evaluationService.delete(id);
+      setEvaluations((prev) => prev.filter((e) => e.id !== id));
+      message.success('Avaliação removida com sucesso!');
+    } catch {
+      message.error('Não foi possível remover a avaliação.');
+    }
   };
 
   const columns: ColumnsType<Evaluation> = [
     {
-      title: 'Aluno',
-      key: 'student',
+      title: 'Título',
+      key: 'title',
       render: (_, r) => (
         <div>
-          <div className="font-semibold text-secondary text-sm">{r.student?.name ?? '—'}</div>
-          <div className="text-xs text-muted">{r.student?.email}</div>
+          <div className="font-semibold text-secondary text-sm">{r.title}</div>
+          <div className="text-xs text-muted">{r.procedurePerformed}</div>
         </div>
       ),
     },
     {
-      title: 'Especialidade',
-      key: 'specialism',
+      title: 'Período',
+      key: 'evaluationNumber',
       render: (_, r) => (
-        <Tag
-          style={{
-            borderRadius: 20,
-            background: '#ede9fe',
-            color: '#6C5CE7',
-            borderColor: '#c4b5fd',
-          }}
-        >
-          {r.exam?.specialism?.name ?? '—'}
+        <Tag color="purple" style={{ borderRadius: 20 }}>
+          {r.evaluationNumber}
         </Tag>
       ),
     },
     {
-      title: 'Exame',
-      key: 'exam',
-      render: (_, r) => <Text style={{ fontSize: 13 }}>{r.exam?.title ?? '—'}</Text>,
+      title: 'Semestre',
+      key: 'academicSemester',
+      render: (_, r) => <Text style={{ fontSize: 13 }}>{r.academicSemester}</Text>,
     },
     {
       title: 'Data',
       key: 'date',
-      render: (_, r) => (r.exam?.date ? new Date(r.exam.date).toLocaleDateString('pt-BR') : '—'),
+      render: (_, r) =>
+        r.date ? new Date(r.date + 'T12:00:00').toLocaleDateString('pt-BR') : '—',
     },
     {
-      title: 'Conceito',
-      key: 'concept',
+      title: 'Box',
+      key: 'box',
+      render: (_, r) => <Text style={{ fontSize: 13 }}>{r.box}</Text>,
+    },
+    {
+      title: 'Nota Final',
+      key: 'grade',
       align: 'center',
-      sorter: (a, b) => a.concept - b.concept,
+      sorter: (a, b) => a.grade - b.grade,
       render: (_, r) => {
-        const { bg, text } = conceptColor(r.concept);
+        const { bg, text } = gradeColor(r.grade);
         return (
           <span
             style={{
@@ -103,15 +119,10 @@ export default function EvaluationsPage() {
               fontSize: 13,
             }}
           >
-            {r.concept.toFixed(1)}
+            {r.grade.toFixed(1)}
           </span>
         );
       },
-    },
-    {
-      title: 'Professor',
-      key: 'professor',
-      render: (_, r) => <Text style={{ fontSize: 13 }}>{r.exam?.professor?.name ?? '—'}</Text>,
     },
     {
       title: 'Ações',
@@ -119,20 +130,6 @@ export default function EvaluationsPage() {
       align: 'right',
       render: (_, record) => (
         <Space>
-          <Tooltip title="Ver detalhes">
-            <Button
-              type="text"
-              icon={<EyeOutlined style={{ color: '#6C5CE7' }} />}
-              onClick={() => navigate(`/avaliacoes/${record.id}`)}
-            />
-          </Tooltip>
-          <Tooltip title="Editar">
-            <Button
-              type="text"
-              icon={<EditOutlined style={{ color: '#636E72' }} />}
-              onClick={() => navigate(`/avaliacoes/${record.id}/editar`)}
-            />
-          </Tooltip>
           <Tooltip title="Remover">
             <Popconfirm
               title="Remover avaliação?"
@@ -171,17 +168,18 @@ export default function EvaluationsPage() {
       <Card style={{ borderRadius: 12, border: '1px solid #f0f0f0' }}>
         <div className="mb-4">
           <Input
-            placeholder="Buscar por aluno, exame ou especialidade..."
+            placeholder="Buscar por título, período, semestre ou procedimento..."
             prefix={<SearchOutlined style={{ color: '#636E72' }} />}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{ maxWidth: 400, borderRadius: 8 }}
+            style={{ maxWidth: 420, borderRadius: 8 }}
           />
         </div>
         <ResponsiveTable
           columns={columns}
           dataSource={filtered}
           rowKey="id"
+          loading={loading}
           pagination={{ pageSize: 10, showSizeChanger: false }}
           locale={{ emptyText: 'Nenhuma avaliação encontrada' }}
         />

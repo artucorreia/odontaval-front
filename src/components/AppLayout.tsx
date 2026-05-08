@@ -3,12 +3,11 @@ import { Layout, Menu, Avatar, Dropdown, Button, Space } from 'antd';
 import {
   DashboardOutlined,
   TeamOutlined,
-  CalendarOutlined,
   BarChartOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  MedicineBoxOutlined,
+  FileTextOutlined,
 } from '@ant-design/icons';
 import { useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -19,8 +18,7 @@ const { Sider, Header, Content } = Layout;
 const menuItems = [
   { key: '/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
   { key: '/alunos', icon: <TeamOutlined />, label: 'Alunos' },
-  { key: '/exames', icon: <MedicineBoxOutlined />, label: 'Exames' },
-  { key: '/agenda', icon: <CalendarOutlined />, label: 'Agenda' },
+  { key: '/avaliacoes', icon: <FileTextOutlined />, label: 'Avaliações' },
   { key: '/relatorios', icon: <BarChartOutlined />, label: 'Relatórios' },
 ];
 

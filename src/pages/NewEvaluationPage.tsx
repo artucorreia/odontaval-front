@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Card,
   Form,
@@ -8,40 +8,94 @@ import {
   DatePicker,
   Typography,
   Breadcrumb,
-  Slider,
   Row,
   Col,
   InputNumber,
   message,
-  Upload,
 } from 'antd';
-import { ArrowLeftOutlined, SaveOutlined, InboxOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { MOCK_STUDENTS, MOCK_EXAMS, MOCK_SPECIALISMS } from '../utils/mockData';
-
+import { evaluationService, userService, specialismService } from '../services/api';
+import { MOCK_STUDENTS, MOCK_SPECIALISMS } from '../utils/mockData';
+import type { User, Specialism, CreateEvaluationRequest } from '../types';
 const { Title, Text } = Typography;
 const { TextArea } = Input;
-const { Dragger } = Upload;
 
-const CRITERIA = [
+const EVALUATION_PERIODS = ['AV1', 'AV2', 'AV3'];
+
+const CRITERIA: { key: keyof Pick<CreateEvaluationRequest, 'punctuality' | 'instrumental' | 'boxOrganization' | 'biosecurity' | 'ethics' | 'concept'>; label: string }[] = [
   { key: 'punctuality', label: 'Pontualidade' },
   { key: 'instrumental', label: 'Instrumental' },
-  { key: 'organizationOfServiceUnit', label: 'Organização do Box' },
+  { key: 'boxOrganization', label: 'Organização do Box' },
   { key: 'biosecurity', label: 'Biossegurança' },
   { key: 'ethics', label: 'Ética' },
-  { key: 'concept', label: 'Conceito Final' },
+  { key: 'concept', label: 'Conceito' },
 ];
+
+const CRITERIA_KEYS = CRITERIA.map((c) => c.key);
+
+function calcGrade(values: Record<string, number>): number {
+  const sum = CRITERIA_KEYS.reduce((acc, k) => acc + (values[k] ?? 0), 0);
+  return parseFloat((10 + sum).toFixed(2));
+}
 
 export default function NewEvaluationPage() {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [students, setStudents] = useState<User[]>([]);
+  const [specialisms, setSpecialisms] = useState<Specialism[]>([]);
+
+  useEffect(() => {
+    userService
+      .findAll('STUDENT')
+      .then((res) => {
+        const data: User[] = res.data?.data ?? [];
+        setStudents(data.length > 0 ? data : MOCK_STUDENTS);
+      })
+      .catch(() => setStudents(MOCK_STUDENTS));
+
+    specialismService
+      .findAll()
+      .then((res) => {
+        const data: Specialism[] = res.data?.data ?? [];
+        setSpecialisms(data.length > 0 ? data : MOCK_SPECIALISMS);
+      })
+      .catch(() => setSpecialisms(MOCK_SPECIALISMS));
+  }, []);
+
+  const handleCriteriaChange = () => {
+    const values = form.getFieldsValue(CRITERIA_KEYS);
+    const computed = calcGrade(values);
+    form.setFieldValue('grade', computed);
+  };
 
   const handleSubmit = async () => {
     try {
-      await form.validateFields();
+      const values = await form.validateFields();
       setLoading(true);
-      await new Promise((r) => setTimeout(r, 800)); // Simulate API
+
+      const payload: CreateEvaluationRequest = {
+        title: values.title,
+        punctuality: values.punctuality,
+        instrumental: values.instrumental,
+        boxOrganization: values.boxOrganization,
+        biosecurity: values.biosecurity,
+        ethics: values.ethics,
+        concept: values.concept,
+        grade: values.grade,
+        observations: values.observations ?? undefined,
+        evaluationNumber: values.evaluationNumber,
+        date: values.date?.format('YYYY-MM-DD') ?? '',
+        academicSemester: values.academicSemester,
+        goals: values.goals,
+        box: values.box,
+        procedurePerformed: values.procedurePerformed,
+        studentId: values.studentId,
+        specialismId: values.specialismId,
+      };
+
+      await evaluationService.create(payload);
       message.success('Avaliação salva com sucesso!');
       navigate('/avaliacoes');
     } catch {
@@ -71,7 +125,14 @@ export default function NewEvaluationPage() {
         </div>
       </div>
 
-      <Form form={form} layout="vertical" size="large">
+      <Form
+        form={form}
+        layout="vertical"
+        size="large"
+        onValuesChange={(changed) => {
+          if (CRITERIA_KEYS.some((k) => k in changed)) handleCriteriaChange();
+        }}
+      >
         <Row gutter={[16, 0]}>
           {/* Left: Form data */}
           <Col xs={24} lg={14}>
@@ -80,6 +141,45 @@ export default function NewEvaluationPage() {
               style={{ borderRadius: 12, border: '1px solid #f0f0f0', marginBottom: 16 }}
             >
               <Row gutter={16}>
+                <Col xs={24}>
+                  <Form.Item
+                    label="Título da Avaliação"
+                    name="title"
+                    rules={[{ required: true, message: 'Informe o título' }]}
+                  >
+                    <Input placeholder="Ex: Avaliação clínica AV1" />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} sm={12}>
+                  <Form.Item
+                    label="Período Avaliativo"
+                    name="evaluationNumber"
+                    rules={[{ required: true, message: 'Selecione o período' }]}
+                  >
+                    <Select placeholder="Selecione...">
+                      {EVALUATION_PERIODS.map((p) => (
+                        <Select.Option key={p} value={p}>
+                          {p}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col xs={24} sm={12}>
+                  <Form.Item
+                    label="Semestre Letivo"
+                    name="academicSemester"
+                    rules={[{ required: true, message: 'Informe o semestre' }]}
+                  >
+                    <Select placeholder="Ex: 2026.1">
+                      {['2026.1', '2026.2', '2025.2', '2025.1'].map((s) => (
+                        <Select.Option key={s} value={s}>
+                          {s}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
                 <Col xs={24} sm={12}>
                   <Form.Item
                     label="Data da Avaliação"
@@ -91,17 +191,11 @@ export default function NewEvaluationPage() {
                 </Col>
                 <Col xs={24} sm={12}>
                   <Form.Item
-                    label="Tipo de Avaliação"
-                    name="examId"
-                    rules={[{ required: true, message: 'Selecione o exame' }]}
+                    label="Box / Unidade de Atendimento"
+                    name="box"
+                    rules={[{ required: true, message: 'Informe o box' }]}
                   >
-                    <Select placeholder="Selecione..." style={{ borderRadius: 8 }}>
-                      {MOCK_EXAMS.map((e) => (
-                        <Select.Option key={e.id} value={e.id}>
-                          {e.title}
-                        </Select.Option>
-                      ))}
-                    </Select>
+                    <Input placeholder="Ex: Box 12A" />
                   </Form.Item>
                 </Col>
                 <Col xs={24} sm={12}>
@@ -111,7 +205,7 @@ export default function NewEvaluationPage() {
                     rules={[{ required: true, message: 'Selecione o aluno' }]}
                   >
                     <Select placeholder="Selecione o aluno..." showSearch optionFilterProp="label">
-                      {MOCK_STUDENTS.map((s) => (
+                      {students.map((s) => (
                         <Select.Option key={s.id} value={s.id} label={s.name}>
                           {s.name}
                         </Select.Option>
@@ -126,33 +220,9 @@ export default function NewEvaluationPage() {
                     rules={[{ required: true, message: 'Selecione a especialidade' }]}
                   >
                     <Select placeholder="Selecione...">
-                      {MOCK_SPECIALISMS.map((s) => (
+                      {specialisms.map((s) => (
                         <Select.Option key={s.id} value={s.id}>
                           {s.name}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col xs={24} sm={12}>
-                  <Form.Item
-                    label="Unidade de Atendimento (Box)"
-                    name="serviceUnit"
-                    rules={[{ required: true }]}
-                  >
-                    <Input placeholder="Ex: Box 01" />
-                  </Form.Item>
-                </Col>
-                <Col xs={24} sm={12}>
-                  <Form.Item
-                    label="Semestre Letivo"
-                    name="academicSemester"
-                    rules={[{ required: true }]}
-                  >
-                    <Select placeholder="Ex: 2025.1">
-                      {['2025.1', '2025.2', '2024.2', '2024.1'].map((s) => (
-                        <Select.Option key={s} value={s}>
-                          {s}
                         </Select.Option>
                       ))}
                     </Select>
@@ -162,7 +232,7 @@ export default function NewEvaluationPage() {
                   <Form.Item
                     label="Procedimento Realizado"
                     name="procedurePerformed"
-                    rules={[{ required: true }]}
+                    rules={[{ required: true, message: 'Informe o procedimento' }]}
                   >
                     <Input placeholder="Descreva o procedimento realizado..." />
                   </Form.Item>
@@ -171,7 +241,7 @@ export default function NewEvaluationPage() {
                   <Form.Item
                     label="Objetivos da Avaliação"
                     name="goals"
-                    rules={[{ required: true }]}
+                    rules={[{ required: true, message: 'Informe os objetivos' }]}
                   >
                     <TextArea
                       rows={3}
@@ -192,29 +262,18 @@ export default function NewEvaluationPage() {
                   </Form.Item>
                 </Col>
               </Row>
-
-              {/* Attachments */}
-              <Form.Item label="Anexos (opcional)" name="attachments">
-                <Dragger multiple beforeUpload={() => false} style={{ borderRadius: 8 }}>
-                  <p className="ant-upload-drag-icon">
-                    <InboxOutlined style={{ color: '#6C5CE7' }} />
-                  </p>
-                  <p style={{ color: '#636E72', fontSize: 13 }}>
-                    Clique para anexar arquivos ou arraste e solte
-                  </p>
-                </Dragger>
-              </Form.Item>
             </Card>
           </Col>
 
-          {/* Right: Scores */}
+          {/* Right: Criteria scores */}
           <Col xs={24} lg={10}>
             <Card
               title="Critérios de Avaliação"
               style={{ borderRadius: 12, border: '1px solid #f0f0f0', marginBottom: 16 }}
             >
               <Text style={{ color: '#636E72', fontSize: 13, display: 'block', marginBottom: 16 }}>
-                Atribua notas de 0 a 10 para cada critério
+                Atribua penalizações de <strong>0 a -10</strong> por critério. A nota final é
+                calculada automaticamente: <strong>10 + (soma das penalizações)</strong>.
               </Text>
 
               {CRITERIA.map(({ key, label }) => (
@@ -222,29 +281,64 @@ export default function NewEvaluationPage() {
                   key={key}
                   label={<span className="text-sm font-medium text-secondary">{label}</span>}
                   name={key}
-                  initialValue={7}
-                  rules={[{ required: true, message: `Informe ${label}` }]}
+                  initialValue={0}
+                  rules={[
+                    { required: true, message: `Informe ${label}` },
+                    {
+                      validator: (_, v) =>
+                        v >= -10 && v <= 0
+                          ? Promise.resolve()
+                          : Promise.reject('Valor entre -10 e 0'),
+                    },
+                  ]}
                 >
-                  <div className="flex items-center gap-3">
-                    <Slider
-                      min={0}
-                      max={10}
-                      step={0.5}
-                      style={{ flex: 1 }}
-                      trackStyle={{ background: '#6C5CE7' }}
-                      handleStyle={{ borderColor: '#6C5CE7' }}
-                    />
-                    <Form.Item name={key} noStyle>
-                      <InputNumber
-                        min={0}
-                        max={10}
-                        step={0.5}
-                        style={{ width: 64, borderRadius: 6 }}
-                      />
-                    </Form.Item>
-                  </div>
+                  <InputNumber
+                    min={-10}
+                    max={0}
+                    step={0.5}
+                    style={{ width: '100%', borderRadius: 6 }}
+                  />
                 </Form.Item>
               ))}
+
+              <div
+                style={{
+                  borderTop: '1px solid #f0f0f0',
+                  paddingTop: 16,
+                  marginTop: 8,
+                }}
+              >
+                <Form.Item
+                  label={
+                    <span className="text-sm font-semibold text-secondary">
+                      Nota Final (0–10)
+                    </span>
+                  }
+                  name="grade"
+                  initialValue={10}
+                  rules={[
+                    { required: true, message: 'Informe a nota final' },
+                    {
+                      validator: (_, v) =>
+                        v >= 0 && v <= 10
+                          ? Promise.resolve()
+                          : Promise.reject('Nota entre 0 e 10'),
+                    },
+                  ]}
+                >
+                  <InputNumber
+                    min={0}
+                    max={10}
+                    step={0.5}
+                    style={{ width: '100%', borderRadius: 6, fontWeight: 700 }}
+                    placeholder="Calculada automaticamente ou edite manualmente"
+                  />
+                </Form.Item>
+                <Text style={{ fontSize: 12, color: '#636E72' }}>
+                  A nota é calculada automaticamente ao preencher os critérios, mas pode ser
+                  ajustada manualmente.
+                </Text>
+              </div>
             </Card>
 
             <div className="flex gap-3">

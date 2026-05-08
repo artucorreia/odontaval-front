@@ -20,38 +20,51 @@ export interface Specialism {
   createdAt?: string;
 }
 
-export interface Exam {
-  id: number;
-  title: string;
-  date: string;
-  academicSemester: string;
-  goals: string;
-  serviceUnit: string;
-  procedurePerformed: string;
-  professorId: string;
-  specialismId: number;
-  specialism?: Specialism;
-  professor?: User;
-  createdAt?: string;
-}
-
 export interface Evaluation {
   id: number;
+  title: string;
   punctuality: number;
   instrumental: number;
-  organizationOfServiceUnit: number;
+  boxOrganization: number;
   biosecurity: number;
   ethics: number;
   concept: number;
+  grade: number;
   observations?: string;
+  evaluationNumber: string;
+  date: string;
+  academicSemester: string;
+  goals: string;
+  box: string;
+  procedurePerformed: string;
+  professorId: string;
   studentId: string;
-  examId: number;
-  student?: User;
-  exam?: Exam;
-  createdAt?: string;
+  specialismId: number;
 }
 
-export interface AuthResponse {
+export interface CreateEvaluationRequest {
+  title: string;
+  punctuality: number;
+  instrumental: number;
+  boxOrganization: number;
+  biosecurity: number;
+  ethics: number;
+  concept: number;
+  grade: number;
+  observations?: string;
+  evaluationNumber: string;
+  date: string;
+  academicSemester: string;
+  goals: string;
+  box: string;
+  procedurePerformed: string;
+  studentId: string;
+  specialismId: number;
+}
+
+export type UpdateEvaluationRequest = CreateEvaluationRequest;
+
+export interface AuthLoginResponse {
   success: boolean;
   code: number;
   data: {
@@ -65,13 +78,4 @@ export interface ApiResponse<T> {
   success: boolean;
   code: number;
   data: T;
-}
-
-export interface PaginatedResponse<T> {
-  success: boolean;
-  code: number;
-  data: T[];
-  total?: number;
-  page?: number;
-  pageSize?: number;
 }

@@ -3,7 +3,8 @@ import { Form, Input, Button, Checkbox, message } from 'antd';
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { authService } from '../services/api';
+import { authService, userService } from '../services/api';
+import type { RoleName, User } from '../types';
 import LogoWhite from '../assets/logo-white.svg';
 
 export default function LoginPage() {
@@ -16,10 +17,34 @@ export default function LoginPage() {
     try {
       const res = await authService.login(values.email, values.password);
       const { token, userId, userRole } = res.data.data;
-      login(token, userId, userRole);
+
+      // Store token before next request so the interceptor can attach it
+      localStorage.setItem('token', token);
+
+      // Fetch the full user profile from the users list
+      let currentUser: User | undefined;
+      try {
+        const usersRes = await userService.findAll();
+        const users: User[] = usersRes.data?.data ?? [];
+        currentUser = users.find((u) => u.id === userId);
+      } catch {
+        // If user fetch fails, build a minimal user from login data
+      }
+
+      if (!currentUser) {
+        currentUser = {
+          id: userId,
+          name: values.email,
+          email: values.email,
+          roles: [{ id: 0, name: userRole as RoleName }],
+        };
+      }
+
+      login(token, currentUser!);
       message.success('Login realizado com sucesso!');
       navigate(userRole === 'STUDENT' ? '/alunos/me' : '/dashboard');
     } catch {
+      localStorage.removeItem('token');
       message.error('E-mail ou senha inválidos.');
     } finally {
       setLoading(false);

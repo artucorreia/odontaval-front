@@ -1,5 +1,5 @@
-import { evaluationService, examService, specialismService, userService } from './api';
-import type { Evaluation, Exam, Specialism, User } from '../types';
+import { evaluationService, specialismService, userService } from './api';
+import type { Evaluation, Specialism, User } from '../types';
 import type {
   EnrichedEvaluation,
   StudentDashboardData,
@@ -11,54 +11,46 @@ import type {
   CriterionKey,
 } from '../types/studentDashboard';
 import { CRITERIA_LABELS } from '../types/studentDashboard';
-import { MOCK_STUDENTS, MOCK_EVALUATIONS, MOCK_EXAMS, MOCK_SPECIALISMS, MOCK_PROFESSORS } from '../utils/mockData';
-import {
-  MOCK_EXTENDED_EXAMS,
-  MOCK_STU001_EVALUATIONS,
-  MOCK_CLASS_EVALUATIONS,
-} from '../utils/studentDashboardMocks';
+import { MOCK_STUDENTS, MOCK_SPECIALISMS, MOCK_PROFESSORS } from '../utils/mockData';
+import { MOCK_STU001_EVALUATIONS, MOCK_CLASS_EVALUATIONS } from '../utils/studentDashboardMocks';
 
 function getCriterionValue(e: EnrichedEvaluation, key: CriterionKey): number {
   const map: Record<CriterionKey, number> = {
     punctuality: e.punctuality,
     instrumental: e.instrumental,
-    organizationOfServiceUnit: e.organizationOfServiceUnit,
+    boxOrganization: e.boxOrganization,
     biosecurity: e.biosecurity,
     ethics: e.ethics,
+    concept: e.concept,
   };
   return map[key];
 }
 
 function enrichEvaluations(
   evaluations: Evaluation[],
-  exams: Exam[],
   specialisms: Specialism[],
   professors: User[],
 ): EnrichedEvaluation[] {
   return evaluations.map((ev) => {
-    const exam = exams.find((e) => e.id === ev.examId) ?? ev.exam;
-    const specialism =
-      exam?.specialism ??
-      (exam ? specialisms.find((s) => s.id === exam.specialismId) : undefined);
-    const professor =
-      exam?.professor ??
-      (exam ? professors.find((p) => p.id === exam.professorId) : undefined);
-
+    const specialism = specialisms.find((s) => s.id === ev.specialismId);
+    const professor = professors.find((p) => p.id === ev.professorId);
     return {
       id: ev.id,
-      date: exam?.date ?? '',
-      examTitle: exam?.title ?? 'Avaliação Clínica',
+      title: ev.title,
+      date: ev.date,
+      evaluationNumber: ev.evaluationNumber,
+      academicSemester: ev.academicSemester,
       specialismName: specialism?.name ?? 'Especialidade',
-      specialismId: exam?.specialismId ?? 0,
-      professorName: professor?.name ?? 'Professor',
-      concept: ev.concept,
+      specialismId: ev.specialismId,
+      professorName: professor?.name ?? '—',
       punctuality: ev.punctuality,
       instrumental: ev.instrumental,
-      organizationOfServiceUnit: ev.organizationOfServiceUnit,
+      boxOrganization: ev.boxOrganization,
       biosecurity: ev.biosecurity,
       ethics: ev.ethics,
+      concept: ev.concept,
+      grade: ev.grade,
       observations: ev.observations,
-      examId: ev.examId,
       studentId: ev.studentId,
     };
   });
@@ -76,7 +68,7 @@ function round1(n: number): number {
 function computeOverviewStats(evals: EnrichedEvaluation[]): StudentOverviewStats {
   if (evals.length === 0) {
     return {
-      avgConcept: 0,
+      avgGrade: 0,
       totalEvaluations: 0,
       bestCriterion: { label: '-', value: 0 },
       worstCriterion: { label: '-', value: 0 },
@@ -85,8 +77,9 @@ function computeOverviewStats(evals: EnrichedEvaluation[]): StudentOverviewStats
     };
   }
 
-  const avgConcept = round1(avg(evals.map((e) => e.concept)));
+  const avgGrade = round1(avg(evals.map((e) => e.grade)));
 
+  // Criterion with penalty closest to 0 = best; furthest = worst
   const criteriaAvgs = (Object.keys(CRITERIA_LABELS) as CriterionKey[]).map((key) => ({
     label: CRITERIA_LABELS[key],
     value: round1(avg(evals.map((e) => getCriterionValue(e, key)))),
@@ -105,8 +98,8 @@ function computeOverviewStats(evals: EnrichedEvaluation[]): StudentOverviewStats
 
     if (sorted.length >= 4) {
       const half = Math.floor(sorted.length / 2);
-      const recentAvg = avg(sorted.slice(-half).map((e) => e.concept));
-      const olderAvg = avg(sorted.slice(0, half).map((e) => e.concept));
+      const recentAvg = avg(sorted.slice(-half).map((e) => e.grade));
+      const olderAvg = avg(sorted.slice(0, half).map((e) => e.grade));
       const delta = recentAvg - olderAvg;
       trendDelta = round1(Math.abs(delta));
       if (delta > 0.3) trend = 'up';
@@ -114,14 +107,15 @@ function computeOverviewStats(evals: EnrichedEvaluation[]): StudentOverviewStats
     }
   }
 
-  return { avgConcept, totalEvaluations: evals.length, bestCriterion: best, worstCriterion: worst, trend, trendDelta };
+  return { avgGrade, totalEvaluations: evals.length, bestCriterion: best, worstCriterion: worst, trend, trendDelta };
 }
 
 function computeRadarData(evals: EnrichedEvaluation[]): RadarDatum[] {
   if (evals.length === 0) return [];
   return (Object.keys(CRITERIA_LABELS) as CriterionKey[]).map((key) => ({
     subject: CRITERIA_LABELS[key],
-    value: round1(avg(evals.map((e) => getCriterionValue(e, key)))),
+    // convert penalty (0 to -10) to performance (0 to 10): 10 + penalty
+    value: round1(10 + avg(evals.map((e) => getCriterionValue(e, key)))),
     fullMark: 10,
   }));
 }
@@ -135,7 +129,7 @@ function computeProgressData(evals: EnrichedEvaluation[]): ProgressDatum[] {
         day: '2-digit',
         month: 'short',
       }),
-      concept: e.concept,
+      grade: e.grade,
     }));
 }
 
@@ -143,7 +137,7 @@ function computeSpecialtyData(evals: EnrichedEvaluation[]): SpecialtyDatum[] {
   const bySpecialty: Record<string, number[]> = {};
   for (const e of evals) {
     if (!bySpecialty[e.specialismName]) bySpecialty[e.specialismName] = [];
-    bySpecialty[e.specialismName].push(e.concept);
+    bySpecialty[e.specialismName].push(e.grade);
   }
   return Object.entries(bySpecialty)
     .map(([specialty, values]) => ({
@@ -165,11 +159,13 @@ function computeClassComparison(
   return (Object.keys(CRITERIA_LABELS) as CriterionKey[]).map((key) => ({
     criterion: key,
     label: CRITERIA_LABELS[key],
-    student: round1(avg(studentEvals.map((e) => getCriterionValue(e, key)))),
+    // convert to performance values (0-10)
+    student: round1(10 + avg(studentEvals.map((e) => getCriterionValue(e, key)))),
     turma: round1(
-      otherEvals.length > 0
-        ? avg(otherEvals.map((e) => getCriterionValue(e, key)))
-        : avg(studentEvals.map((e) => getCriterionValue(e, key))),
+      10 +
+        (otherEvals.length > 0
+          ? avg(otherEvals.map((e) => getCriterionValue(e, key)))
+          : avg(studentEvals.map((e) => getCriterionValue(e, key)))),
     ),
   }));
 }
@@ -181,45 +177,41 @@ export async function fetchStudentDashboardData(studentId: string): Promise<Stud
   let usedMock = false;
 
   try {
-    const [evalsRes, examsRes, specialismsRes] = await Promise.all([
+    const [evalsRes, specialismsRes] = await Promise.all([
       evaluationService.findAll(),
-      examService.findAll(),
       specialismService.findAll(),
     ]);
 
     const evaluations: Evaluation[] = evalsRes.data?.data ?? [];
-    const exams: Exam[] = examsRes.data?.data ?? [];
     const specialisms: Specialism[] = specialismsRes.data?.data ?? [];
 
     if (evaluations.length === 0) throw new Error('no data');
 
     enrichedStudentEvals = enrichEvaluations(
       evaluations.filter((e) => e.studentId === studentId),
-      exams,
       specialisms,
       MOCK_PROFESSORS,
     );
-    enrichedAllEvals = enrichEvaluations(evaluations, exams, specialisms, MOCK_PROFESSORS);
+    enrichedAllEvals = enrichEvaluations(evaluations, specialisms, MOCK_PROFESSORS);
 
     try {
-      const userRes = await userService.findById(studentId);
-      student = userRes.data?.data ?? null;
+      const usersRes = await userService.findAll();
+      const users: User[] = usersRes.data?.data ?? [];
+      student = users.find((u) => u.id === studentId) ?? null;
     } catch {
       student = MOCK_STUDENTS.find((s) => s.id === studentId) ?? null;
     }
   } catch {
     usedMock = true;
 
-    const allEvals = [...MOCK_EVALUATIONS, ...MOCK_STU001_EVALUATIONS, ...MOCK_CLASS_EVALUATIONS];
-    const allExams = [...MOCK_EXAMS, ...MOCK_EXTENDED_EXAMS];
+    const allEvals = [...MOCK_STU001_EVALUATIONS, ...MOCK_CLASS_EVALUATIONS];
 
     enrichedStudentEvals = enrichEvaluations(
       allEvals.filter((e) => e.studentId === studentId),
-      allExams,
       MOCK_SPECIALISMS,
       MOCK_PROFESSORS,
     );
-    enrichedAllEvals = enrichEvaluations(allEvals, allExams, MOCK_SPECIALISMS, MOCK_PROFESSORS);
+    enrichedAllEvals = enrichEvaluations(allEvals, MOCK_SPECIALISMS, MOCK_PROFESSORS);
     student = MOCK_STUDENTS.find((s) => s.id === studentId) ?? MOCK_STUDENTS[0];
   }
 

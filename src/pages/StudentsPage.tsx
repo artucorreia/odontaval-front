@@ -1,9 +1,18 @@
-import { useState } from 'react';
-import { Card, Button, Input, Typography, Tag, Avatar, Tooltip } from 'antd';
+import { useState, useEffect } from 'react';
+import {
+  Card,
+  Button,
+  Input,
+  Typography,
+  Tag,
+  Avatar,
+  Tooltip,
+} from 'antd';
 import ResponsiveTable from '../components/ResponsiveTable';
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useNavigate } from 'react-router-dom';
+import { userService } from '../services/api';
 import { MOCK_STUDENTS } from '../utils/mockData';
 import type { User } from '../types';
 
@@ -11,9 +20,22 @@ const { Title, Text } = Typography;
 
 export default function StudentsPage() {
   const [search, setSearch] = useState('');
+  const [students, setStudents] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const filtered = MOCK_STUDENTS.filter(
+  useEffect(() => {
+    userService
+      .findAll('STUDENT')
+      .then((res) => {
+        const data: User[] = res.data?.data ?? [];
+        setStudents(data.length > 0 ? data : MOCK_STUDENTS);
+      })
+      .catch(() => setStudents(MOCK_STUDENTS))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const filtered = students.filter(
     (s) =>
       s.name.toLowerCase().includes(search.toLowerCase()) ||
       s.email.toLowerCase().includes(search.toLowerCase()),
@@ -98,6 +120,7 @@ export default function StudentsPage() {
           columns={columns}
           dataSource={filtered}
           rowKey="id"
+          loading={loading}
           pagination={{ pageSize: 10, showSizeChanger: false }}
           locale={{ emptyText: 'Nenhum aluno encontrado' }}
         />

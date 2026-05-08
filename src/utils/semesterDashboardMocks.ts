@@ -1,161 +1,26 @@
 import type { Evaluation } from '../types';
-import { MOCK_STUDENTS } from './mockData';
-import { MOCK_EXTENDED_EXAMS } from './studentDashboardMocks';
 
-// Extra evaluations for other students on the early-semester exams (10-17)
-// This distributes data across Jan-May to make the timeline and heatmap meaningful.
+// Extra evaluations distributed across 2026.1 for timeline and heatmap
 export const MOCK_SEMESTER_EXTRA_EVALUATIONS: Evaluation[] = [
-  // === exam 10 (Jan 20, Dentística) ===
-  {
-    id: 1001, punctuality: 7.0, instrumental: 6.5, organizationOfServiceUnit: 6.5,
-    biosecurity: 8.0, ethics: 7.5, concept: 7.0, observations: '',
-    studentId: 'stu-002', examId: 10, student: MOCK_STUDENTS[1], exam: MOCK_EXTENDED_EXAMS[0],
-  },
-  {
-    id: 1002, punctuality: 8.0, instrumental: 7.5, organizationOfServiceUnit: 7.5,
-    biosecurity: 8.5, ethics: 8.0, concept: 7.8, observations: '',
-    studentId: 'stu-003', examId: 10, student: MOCK_STUDENTS[2], exam: MOCK_EXTENDED_EXAMS[0],
-  },
-  {
-    id: 1003, punctuality: 6.5, instrumental: 6.0, organizationOfServiceUnit: 6.0,
-    biosecurity: 7.5, ethics: 7.0, concept: 6.5, observations: '',
-    studentId: 'stu-004', examId: 10, student: MOCK_STUDENTS[3], exam: MOCK_EXTENDED_EXAMS[0],
-  },
-  // === exam 11 (Feb 10, Endodontia) ===
-  {
-    id: 1004, punctuality: 7.5, instrumental: 7.0, organizationOfServiceUnit: 7.0,
-    biosecurity: 8.5, ethics: 7.5, concept: 7.3, observations: '',
-    studentId: 'stu-004', examId: 11, student: MOCK_STUDENTS[3], exam: MOCK_EXTENDED_EXAMS[1],
-  },
-  {
-    id: 1005, punctuality: 8.5, instrumental: 8.0, organizationOfServiceUnit: 7.5,
-    biosecurity: 9.0, ethics: 8.5, concept: 8.2, observations: '',
-    studentId: 'stu-007', examId: 11, student: MOCK_STUDENTS[6], exam: MOCK_EXTENDED_EXAMS[1],
-  },
-  {
-    id: 1006, punctuality: 7.0, instrumental: 7.5, organizationOfServiceUnit: 6.5,
-    biosecurity: 8.0, ethics: 7.5, concept: 7.2, observations: '',
-    studentId: 'stu-006', examId: 11, student: MOCK_STUDENTS[5], exam: MOCK_EXTENDED_EXAMS[1],
-  },
-  // === exam 12 (Feb 25, Dentística) ===
-  {
-    id: 1007, punctuality: 8.5, instrumental: 8.5, organizationOfServiceUnit: 8.0,
-    biosecurity: 9.5, ethics: 9.0, concept: 8.5, observations: '',
-    studentId: 'stu-003', examId: 12, student: MOCK_STUDENTS[2], exam: MOCK_EXTENDED_EXAMS[2],
-  },
-  {
-    id: 1008, punctuality: 7.5, instrumental: 7.5, organizationOfServiceUnit: 7.0,
-    biosecurity: 8.0, ethics: 7.5, concept: 7.5, observations: '',
-    studentId: 'stu-005', examId: 12, student: MOCK_STUDENTS[4], exam: MOCK_EXTENDED_EXAMS[2],
-  },
-  {
-    id: 1009, punctuality: 6.0, instrumental: 6.0, organizationOfServiceUnit: 5.5,
-    biosecurity: 7.0, ethics: 6.5, concept: 6.0, observations: '',
-    studentId: 'stu-008', examId: 12, student: MOCK_STUDENTS[7], exam: MOCK_EXTENDED_EXAMS[2],
-  },
-  // === exam 13 (Mar 15, Periodontia) ===
-  {
-    id: 1010, punctuality: 8.0, instrumental: 8.0, organizationOfServiceUnit: 7.5,
-    biosecurity: 8.5, ethics: 8.0, concept: 8.0, observations: '',
-    studentId: 'stu-002', examId: 13, student: MOCK_STUDENTS[1], exam: MOCK_EXTENDED_EXAMS[3],
-  },
-  {
-    id: 1011, punctuality: 7.5, instrumental: 7.5, organizationOfServiceUnit: 7.0,
-    biosecurity: 8.0, ethics: 8.0, concept: 7.5, observations: '',
-    studentId: 'stu-005', examId: 13, student: MOCK_STUDENTS[4], exam: MOCK_EXTENDED_EXAMS[3],
-  },
-  {
-    id: 1012, punctuality: 8.5, instrumental: 9.0, organizationOfServiceUnit: 8.5,
-    biosecurity: 9.5, ethics: 9.0, concept: 8.8, observations: '',
-    studentId: 'stu-007', examId: 13, student: MOCK_STUDENTS[6], exam: MOCK_EXTENDED_EXAMS[3],
-  },
-  {
-    id: 1013, punctuality: 6.5, instrumental: 7.0, organizationOfServiceUnit: 6.5,
-    biosecurity: 7.5, ethics: 7.0, concept: 6.8, observations: '',
-    studentId: 'stu-008', examId: 13, student: MOCK_STUDENTS[7], exam: MOCK_EXTENDED_EXAMS[3],
-  },
-  // === exam 14 (Mar 28, Ortodontia) ===
-  {
-    id: 1014, punctuality: 9.0, instrumental: 9.0, organizationOfServiceUnit: 8.5,
-    biosecurity: 9.5, ethics: 9.5, concept: 9.0, observations: '',
-    studentId: 'stu-003', examId: 14, student: MOCK_STUDENTS[2], exam: MOCK_EXTENDED_EXAMS[4],
-  },
-  {
-    id: 1015, punctuality: 7.5, instrumental: 8.0, organizationOfServiceUnit: 7.5,
-    biosecurity: 8.5, ethics: 8.0, concept: 7.8, observations: '',
-    studentId: 'stu-004', examId: 14, student: MOCK_STUDENTS[3], exam: MOCK_EXTENDED_EXAMS[4],
-  },
-  {
-    id: 1016, punctuality: 7.0, instrumental: 7.0, organizationOfServiceUnit: 6.5,
-    biosecurity: 8.0, ethics: 7.5, concept: 7.0, observations: '',
-    studentId: 'stu-006', examId: 14, student: MOCK_STUDENTS[5], exam: MOCK_EXTENDED_EXAMS[4],
-  },
-  {
-    id: 1017, punctuality: 6.5, instrumental: 6.5, organizationOfServiceUnit: 6.0,
-    biosecurity: 7.5, ethics: 7.0, concept: 6.5, observations: '',
-    studentId: 'stu-008', examId: 14, student: MOCK_STUDENTS[7], exam: MOCK_EXTENDED_EXAMS[4],
-  },
-  // === exam 15 (Apr 10, Endodontia) ===
-  {
-    id: 1018, punctuality: 8.5, instrumental: 8.5, organizationOfServiceUnit: 8.0,
-    biosecurity: 9.5, ethics: 9.0, concept: 8.5, observations: '',
-    studentId: 'stu-002', examId: 15, student: MOCK_STUDENTS[1], exam: MOCK_EXTENDED_EXAMS[5],
-  },
-  {
-    id: 1019, punctuality: 9.0, instrumental: 9.5, organizationOfServiceUnit: 9.0,
-    biosecurity: 10.0, ethics: 9.5, concept: 9.2, observations: '',
-    studentId: 'stu-003', examId: 15, student: MOCK_STUDENTS[2], exam: MOCK_EXTENDED_EXAMS[5],
-  },
-  {
-    id: 1020, punctuality: 8.5, instrumental: 8.5, organizationOfServiceUnit: 8.0,
-    biosecurity: 9.0, ethics: 9.0, concept: 8.5, observations: '',
-    studentId: 'stu-007', examId: 15, student: MOCK_STUDENTS[6], exam: MOCK_EXTENDED_EXAMS[5],
-  },
-  {
-    id: 1021, punctuality: 7.0, instrumental: 7.0, organizationOfServiceUnit: 6.5,
-    biosecurity: 8.0, ethics: 7.5, concept: 7.0, observations: '',
-    studentId: 'stu-008', examId: 15, student: MOCK_STUDENTS[7], exam: MOCK_EXTENDED_EXAMS[5],
-  },
-  // === exam 16 (Apr 22, Dentística) ===
-  {
-    id: 1022, punctuality: 9.5, instrumental: 9.5, organizationOfServiceUnit: 9.0,
-    biosecurity: 10.0, ethics: 9.5, concept: 9.5, observations: '',
-    studentId: 'stu-003', examId: 16, student: MOCK_STUDENTS[2], exam: MOCK_EXTENDED_EXAMS[6],
-  },
-  {
-    id: 1023, punctuality: 8.0, instrumental: 8.0, organizationOfServiceUnit: 7.5,
-    biosecurity: 9.0, ethics: 8.5, concept: 8.0, observations: '',
-    studentId: 'stu-005', examId: 16, student: MOCK_STUDENTS[4], exam: MOCK_EXTENDED_EXAMS[6],
-  },
-  {
-    id: 1024, punctuality: 7.5, instrumental: 7.5, organizationOfServiceUnit: 7.0,
-    biosecurity: 8.5, ethics: 8.0, concept: 7.5, observations: '',
-    studentId: 'stu-006', examId: 16, student: MOCK_STUDENTS[5], exam: MOCK_EXTENDED_EXAMS[6],
-  },
-  {
-    id: 1025, punctuality: 9.0, instrumental: 9.0, organizationOfServiceUnit: 8.5,
-    biosecurity: 9.5, ethics: 9.5, concept: 9.0, observations: '',
-    studentId: 'stu-007', examId: 16, student: MOCK_STUDENTS[6], exam: MOCK_EXTENDED_EXAMS[6],
-  },
-  // === exam 17 (May 5, Cirurgia Oral) ===
-  {
-    id: 1026, punctuality: 8.5, instrumental: 9.0, organizationOfServiceUnit: 8.5,
-    biosecurity: 9.0, ethics: 9.0, concept: 8.8, observations: '',
-    studentId: 'stu-002', examId: 17, student: MOCK_STUDENTS[1], exam: MOCK_EXTENDED_EXAMS[7],
-  },
-  {
-    id: 1027, punctuality: 9.5, instrumental: 9.5, organizationOfServiceUnit: 9.0,
-    biosecurity: 10.0, ethics: 10.0, concept: 9.5, observations: '',
-    studentId: 'stu-003', examId: 17, student: MOCK_STUDENTS[2], exam: MOCK_EXTENDED_EXAMS[7],
-  },
-  {
-    id: 1028, punctuality: 7.5, instrumental: 8.0, organizationOfServiceUnit: 7.5,
-    biosecurity: 8.5, ethics: 8.0, concept: 7.8, observations: '',
-    studentId: 'stu-004', examId: 17, student: MOCK_STUDENTS[3], exam: MOCK_EXTENDED_EXAMS[7],
-  },
-  {
-    id: 1029, punctuality: 7.5, instrumental: 7.5, organizationOfServiceUnit: 7.0,
-    biosecurity: 8.0, ethics: 8.0, concept: 7.5, observations: '',
-    studentId: 'stu-006', examId: 17, student: MOCK_STUDENTS[5], exam: MOCK_EXTENDED_EXAMS[7],
-  },
+  { id: 1001, title: 'Avaliação clínica AV1', punctuality: -1.5, instrumental: -2.0, boxOrganization: -2.0, biosecurity: -0.5, ethics: -0.5, concept: -1.5, grade: 2.0, evaluationNumber: 'AV1', date: '2026-01-20', academicSemester: '2026.1', goals: 'Restauração', box: 'Box 02', procedurePerformed: 'Restauração composta', professorId: 'prof-001', studentId: 'stu-002', specialismId: 1 },
+  { id: 1002, title: 'Avaliação clínica AV1', punctuality: -1.0, instrumental: -1.0, boxOrganization: -1.0, biosecurity: -0.5, ethics: -0.5, concept: -1.0, grade: 5.0, evaluationNumber: 'AV1', date: '2026-01-20', academicSemester: '2026.1', goals: 'Restauração', box: 'Box 03', procedurePerformed: 'Restauração composta', professorId: 'prof-001', studentId: 'stu-003', specialismId: 1 },
+  { id: 1003, title: 'Avaliação clínica AV1', punctuality: -2.0, instrumental: -2.0, boxOrganization: -2.0, biosecurity: -1.0, ethics: -1.5, concept: -1.5, grade: 0.0, evaluationNumber: 'AV1', date: '2026-01-20', academicSemester: '2026.1', goals: 'Restauração', box: 'Box 04', procedurePerformed: 'Restauração composta', professorId: 'prof-001', studentId: 'stu-004', specialismId: 1 },
+  { id: 1004, title: 'Avaliação clínica AV1', punctuality: -0.5, instrumental: -1.0, boxOrganization: -1.0, biosecurity: 0, ethics: -0.5, concept: -0.5, grade: 6.5, evaluationNumber: 'AV1', date: '2026-02-10', academicSemester: '2026.1', goals: 'Canal', box: 'Box 03', procedurePerformed: 'Tratamento de canal', professorId: 'prof-002', studentId: 'stu-004', specialismId: 3 },
+  { id: 1005, title: 'Avaliação clínica AV1', punctuality: -0.5, instrumental: -0.5, boxOrganization: -0.5, biosecurity: 0, ethics: -0.5, concept: -0.5, grade: 7.5, evaluationNumber: 'AV1', date: '2026-02-10', academicSemester: '2026.1', goals: 'Canal', box: 'Box 05', procedurePerformed: 'Tratamento de canal', professorId: 'prof-002', studentId: 'stu-007', specialismId: 3 },
+  { id: 1006, title: 'Avaliação clínica AV1', punctuality: -1.0, instrumental: -1.0, boxOrganization: -1.5, biosecurity: -0.5, ethics: -0.5, concept: -1.0, grade: 4.5, evaluationNumber: 'AV1', date: '2026-02-10', academicSemester: '2026.1', goals: 'Canal', box: 'Box 06', procedurePerformed: 'Tratamento de canal', professorId: 'prof-002', studentId: 'stu-006', specialismId: 3 },
+  { id: 1007, title: 'Avaliação clínica AV2', punctuality: -0.5, instrumental: -0.5, boxOrganization: -0.5, biosecurity: 0, ethics: 0, concept: -0.5, grade: 8.0, evaluationNumber: 'AV2', date: '2026-02-25', academicSemester: '2026.1', goals: 'Restauração II', box: 'Box 02', procedurePerformed: 'Restauração composta', professorId: 'prof-001', studentId: 'stu-003', specialismId: 1 },
+  { id: 1008, title: 'Avaliação clínica AV2', punctuality: -0.5, instrumental: -0.5, boxOrganization: -1.0, biosecurity: 0, ethics: -0.5, concept: -0.5, grade: 7.0, evaluationNumber: 'AV2', date: '2026-02-25', academicSemester: '2026.1', goals: 'Restauração II', box: 'Box 04', procedurePerformed: 'Restauração composta', professorId: 'prof-001', studentId: 'stu-005', specialismId: 1 },
+  { id: 1009, title: 'Avaliação clínica AV2', punctuality: -2.0, instrumental: -2.0, boxOrganization: -2.0, biosecurity: -0.5, ethics: -1.5, concept: -1.0, grade: 1.0, evaluationNumber: 'AV2', date: '2026-02-25', academicSemester: '2026.1', goals: 'Restauração II', box: 'Box 06', procedurePerformed: 'Restauração composta', professorId: 'prof-001', studentId: 'stu-008', specialismId: 1 },
+  { id: 1010, title: 'Avaliação clínica AV2', punctuality: -0.5, instrumental: -0.5, boxOrganization: -0.5, biosecurity: -0.5, ethics: -0.5, concept: -0.5, grade: 7.0, evaluationNumber: 'AV2', date: '2026-03-15', academicSemester: '2026.1', goals: 'Raspagem', box: 'Box 04', procedurePerformed: 'Raspagem', professorId: 'prof-002', studentId: 'stu-002', specialismId: 4 },
+  { id: 1011, title: 'Avaliação clínica AV2', punctuality: -0.5, instrumental: -0.5, boxOrganization: -0.5, biosecurity: -0.5, ethics: -0.5, concept: -0.5, grade: 7.0, evaluationNumber: 'AV2', date: '2026-03-15', academicSemester: '2026.1', goals: 'Raspagem', box: 'Box 05', procedurePerformed: 'Raspagem', professorId: 'prof-002', studentId: 'stu-005', specialismId: 4 },
+  { id: 1012, title: 'Avaliação clínica AV2', punctuality: -0.5, instrumental: -0.5, boxOrganization: -1.0, biosecurity: -0.5, ethics: 0, concept: -0.5, grade: 7.0, evaluationNumber: 'AV2', date: '2026-03-15', academicSemester: '2026.1', goals: 'Raspagem', box: 'Box 06', procedurePerformed: 'Raspagem', professorId: 'prof-002', studentId: 'stu-006', specialismId: 4 },
+  { id: 1013, title: 'Avaliação clínica AV2', punctuality: -2.0, instrumental: -1.5, boxOrganization: -1.5, biosecurity: -0.5, ethics: -0.5, concept: -1.5, grade: 2.5, evaluationNumber: 'AV2', date: '2026-03-15', academicSemester: '2026.1', goals: 'Raspagem', box: 'Box 07', procedurePerformed: 'Raspagem', professorId: 'prof-002', studentId: 'stu-008', specialismId: 4 },
+  { id: 1014, title: 'Avaliação clínica AV3', punctuality: 0, instrumental: -0.5, boxOrganization: -0.5, biosecurity: 0, ethics: 0, concept: 0, grade: 9.0, evaluationNumber: 'AV3', date: '2026-03-28', academicSemester: '2026.1', goals: 'Ortodontia', box: 'Box 02', procedurePerformed: 'Braqueteamento', professorId: 'prof-001', studentId: 'stu-003', specialismId: 2 },
+  { id: 1015, title: 'Avaliação clínica AV3', punctuality: -0.5, instrumental: -0.5, boxOrganization: -0.5, biosecurity: 0, ethics: -0.5, concept: -0.5, grade: 7.5, evaluationNumber: 'AV3', date: '2026-03-28', academicSemester: '2026.1', goals: 'Ortodontia', box: 'Box 04', procedurePerformed: 'Braqueteamento', professorId: 'prof-001', studentId: 'stu-004', specialismId: 2 },
+  { id: 1016, title: 'Avaliação clínica AV3', punctuality: -1.0, instrumental: -1.0, boxOrganization: -1.0, biosecurity: -0.5, ethics: -0.5, concept: -1.0, grade: 5.0, evaluationNumber: 'AV3', date: '2026-03-28', academicSemester: '2026.1', goals: 'Ortodontia', box: 'Box 06', procedurePerformed: 'Braqueteamento', professorId: 'prof-001', studentId: 'stu-006', specialismId: 2 },
+  { id: 1017, title: 'Avaliação clínica AV3', punctuality: -2.0, instrumental: -1.5, boxOrganization: -1.5, biosecurity: -0.5, ethics: -1.0, concept: -1.5, grade: 2.0, evaluationNumber: 'AV3', date: '2026-03-28', academicSemester: '2026.1', goals: 'Ortodontia', box: 'Box 07', procedurePerformed: 'Braqueteamento', professorId: 'prof-001', studentId: 'stu-008', specialismId: 2 },
+  { id: 1018, title: 'Avaliação clínica AV3', punctuality: -0.5, instrumental: -0.5, boxOrganization: -0.5, biosecurity: 0, ethics: 0, concept: -0.5, grade: 8.0, evaluationNumber: 'AV3', date: '2026-04-10', academicSemester: '2026.1', goals: 'Canal II', box: 'Box 03', procedurePerformed: 'Tratamento de canal', professorId: 'prof-002', studentId: 'stu-002', specialismId: 3 },
+  { id: 1019, title: 'Avaliação clínica AV3', punctuality: 0, instrumental: -0.5, boxOrganization: 0, biosecurity: 0, ethics: 0, concept: 0, grade: 9.5, evaluationNumber: 'AV3', date: '2026-04-10', academicSemester: '2026.1', goals: 'Canal II', box: 'Box 05', procedurePerformed: 'Tratamento de canal', professorId: 'prof-002', studentId: 'stu-003', specialismId: 3 },
+  { id: 1020, title: 'Avaliação clínica AV3', punctuality: -0.5, instrumental: -0.5, boxOrganization: -0.5, biosecurity: 0, ethics: 0, concept: -0.5, grade: 8.0, evaluationNumber: 'AV3', date: '2026-04-10', academicSemester: '2026.1', goals: 'Canal II', box: 'Box 06', procedurePerformed: 'Tratamento de canal', professorId: 'prof-002', studentId: 'stu-007', specialismId: 3 },
+  { id: 1021, title: 'Avaliação clínica AV3', punctuality: -2.0, instrumental: -1.5, boxOrganization: -1.5, biosecurity: -1.0, ethics: -1.0, concept: -1.5, grade: 1.5, evaluationNumber: 'AV3', date: '2026-04-10', academicSemester: '2026.1', goals: 'Canal II', box: 'Box 07', procedurePerformed: 'Tratamento de canal', professorId: 'prof-002', studentId: 'stu-008', specialismId: 3 },
 ];

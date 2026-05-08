@@ -100,7 +100,7 @@ export default function StudentDetailPage() {
                 </Descriptions.Item>
                 <Descriptions.Item label="Média Geral">
                   <span style={{ fontWeight: 600, color: '#6C5CE7', fontSize: 15 }}>
-                    {data?.overviewStats.avgConcept.toFixed(1) ?? '-'}
+                    {data?.overviewStats.avgGrade.toFixed(1) ?? '-'}
                   </span>
                 </Descriptions.Item>
               </Descriptions>

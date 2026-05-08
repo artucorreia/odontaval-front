@@ -10,12 +10,12 @@ export default function StudentOverviewCards({ stats }: Props) {
   const cards = [
     {
       title: 'Média Geral',
-      value: stats.avgConcept,
+      value: stats.avgGrade,
       precision: 1,
       suffix: '/ 10',
       icon: <BarChartOutlined style={{ fontSize: 20, color: '#6C5CE7' }} />,
       color: '#6C5CE7',
-      tooltip: 'Média do conceito final em todas as avaliações',
+      tooltip: 'Média da nota final em todas as avaliações',
     },
     {
       title: 'Avaliações',
