@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { AuthLoginResponse, CreateEvaluationRequest, UpdateEvaluationRequest } from '../types';
+import type { ApiResponse, AuthLoginResponse, CreateEvaluationRequest, DashboardStats, UpdateEvaluationRequest } from '../types';
 
 const BASE_URL = 'http://localhost:8081';
 
@@ -65,7 +65,7 @@ export const userService = {
 };
 
 export const dashboardService = {
-  getStats: () => api.get('/api/v1/dashboard/stats'),
+  getStats: () => api.get<ApiResponse<DashboardStats>>('/api/v1/dashboard/stats'),
 };
 
 export default api;

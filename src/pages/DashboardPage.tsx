@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Card, Col, Row, Typography, Button, Avatar, List, Spin, Tag } from 'antd';
+import { Card, Col, Row, Typography, Button, Avatar, List, Spin, Tag, Alert } from 'antd';
 import {
   TeamOutlined,
   FileTextOutlined,
@@ -8,12 +8,12 @@ import {
   BarChartOutlined,
   FormOutlined,
   CalendarOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { evaluationService, dashboardService } from '../services/api';
-import type { Evaluation } from '../types';
-import { MOCK_DASHBOARD_STATS, MOCK_EVALUATIONS } from '../utils/mockData';
+import { dashboardService } from '../services/api';
+import type { DashboardStats } from '../types';
 
 const { Title, Text } = Typography;
 
@@ -33,9 +33,10 @@ function gradeColor(grade: number) {
 export default function DashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [recentEvaluations, setRecentEvaluations] = useState<Evaluation[]>([]);
-  const [loadingEvaluations, setLoadingEvaluations] = useState(true);
-  const [stats, setStats] = useState(MOCK_DASHBOARD_STATS);
+
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const firstName = user?.name?.split(' ')[0] ?? 'Usuário';
   const today = new Date().toLocaleDateString('pt-BR', {
@@ -44,39 +45,24 @@ export default function DashboardPage() {
     month: 'long',
   });
 
-  useEffect(() => {
+  const fetchStats = () => {
+    setLoading(true);
+    setError(null);
     dashboardService
       .getStats()
-      .then((res) => { if (res.data?.data) setStats(res.data.data); })
-      .catch(() => {});
-  }, []);
+      .then((res) => setStats(res.data?.data ?? null))
+      .catch(() => setError('Não foi possível carregar os dados. Verifique a conexão com o servidor.'))
+      .finally(() => setLoading(false));
+  };
 
   useEffect(() => {
-    evaluationService
-      .findAll()
-      .then((res) => {
-        const evals: Evaluation[] = res.data?.data ?? [];
-        if (evals.length === 0) throw new Error('empty');
-        setRecentEvaluations(
-          [...evals]
-            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-            .slice(0, 5),
-        );
-      })
-      .catch(() =>
-        setRecentEvaluations(
-          [...MOCK_EVALUATIONS]
-            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-            .slice(0, 5),
-        ),
-      )
-      .finally(() => setLoadingEvaluations(false));
+    fetchStats();
   }, []);
 
   const kpiCards = [
     {
       label: 'Total de Alunos',
-      value: stats.totalStudents,
+      value: stats?.totalStudents ?? '—',
       sub: 'cadastrados no sistema',
       icon: <TeamOutlined style={{ fontSize: 20, color: '#6C5CE7' }} />,
       iconBg: '#ede9fe',
@@ -84,7 +70,7 @@ export default function DashboardPage() {
     },
     {
       label: 'Avaliações Realizadas',
-      value: stats.totalEvaluations,
+      value: stats?.totalEvaluations ?? '—',
       sub: 'em todos os semestres',
       icon: <FileTextOutlined style={{ fontSize: 20, color: '#0984e3' }} />,
       iconBg: '#dbeafe',
@@ -92,7 +78,7 @@ export default function DashboardPage() {
     },
     {
       label: 'Avaliações este mês',
-      value: stats.evaluationsThisMonth ?? 0,
+      value: stats?.evaluationsThisMonth ?? '—',
       sub: 'no mês corrente',
       icon: <CalendarOutlined style={{ fontSize: 20, color: '#00b894' }} />,
       iconBg: '#d1fae5',
@@ -107,7 +93,6 @@ export default function DashboardPage() {
       route: '/avaliacoes/nova',
       bg: '#6C5CE7',
       color: '#fff',
-      type: 'primary' as const,
     },
     {
       label: 'Gerenciar Alunos',
@@ -115,7 +100,6 @@ export default function DashboardPage() {
       route: '/alunos',
       bg: '#f5f3ff',
       color: '#6C5CE7',
-      type: 'default' as const,
     },
     {
       label: 'Ver Relatórios',
@@ -123,7 +107,6 @@ export default function DashboardPage() {
       route: '/relatorios',
       bg: '#f0f9ff',
       color: '#0984e3',
-      type: 'default' as const,
     },
   ];
 
@@ -156,11 +139,31 @@ export default function DashboardPage() {
         </div>
         <Avatar
           size={64}
-          style={{ background: 'rgba(255,255,255,0.2)', fontSize: 26, fontWeight: 700, color: '#fff', flexShrink: 0 }}
+          style={{
+            background: 'rgba(255,255,255,0.2)',
+            fontSize: 26,
+            fontWeight: 700,
+            color: '#fff',
+            flexShrink: 0,
+          }}
         >
           {firstName[0]?.toUpperCase()}
         </Avatar>
       </div>
+
+      {error && (
+        <Alert
+          type="error"
+          message={error}
+          action={
+            <Button size="small" icon={<ReloadOutlined />} onClick={fetchStats}>
+              Tentar novamente
+            </Button>
+          }
+          style={{ marginBottom: 20 }}
+          showIcon
+        />
+      )}
 
       {/* ── KPI cards ────────────────────────────────────────────────── */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
@@ -172,20 +175,31 @@ export default function DashboardPage() {
             >
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                 <div>
-                  <Text style={{ color: '#94a3b8', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  <Text
+                    style={{
+                      color: '#94a3b8',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.04em',
+                    }}
+                  >
                     {card.label}
                   </Text>
                   <div
                     style={{
                       fontSize: 34,
                       fontWeight: 800,
-                      color: card.accent,
+                      color: loading ? '#d1d5db' : card.accent,
                       lineHeight: 1.1,
                       marginTop: 6,
                       marginBottom: 4,
+                      minHeight: 42,
+                      display: 'flex',
+                      alignItems: 'center',
                     }}
                   >
-                    {card.value}
+                    {loading ? <Spin size="small" /> : card.value}
                   </div>
                   <Text style={{ color: '#b2bec3', fontSize: 12 }}>{card.sub}</Text>
                 </div>
@@ -227,20 +241,23 @@ export default function DashboardPage() {
               </Button>
             }
           >
-            {loadingEvaluations ? (
+            {loading ? (
               <div style={{ display: 'flex', justifyContent: 'center', padding: '32px 0' }}>
                 <Spin />
               </div>
             ) : (
               <List
-                dataSource={recentEvaluations}
+                dataSource={stats?.recentEvaluations ?? []}
                 locale={{ emptyText: 'Nenhuma avaliação encontrada' }}
                 renderItem={(evaluation, idx) => (
                   <List.Item
                     style={{
                       padding: '14px 24px',
                       cursor: 'pointer',
-                      borderBottom: idx < recentEvaluations.length - 1 ? '1px solid #fafafa' : 'none',
+                      borderBottom:
+                        idx < (stats?.recentEvaluations.length ?? 1) - 1
+                          ? '1px solid #fafafa'
+                          : 'none',
                       transition: 'background 0.15s',
                     }}
                     onMouseEnter={(e) => (e.currentTarget.style.background = '#fafafa')}
@@ -260,19 +277,32 @@ export default function DashboardPage() {
                           <Text style={{ fontSize: 13.5, color: '#2D3436', fontWeight: 600 }}>
                             {evaluation.title}
                           </Text>
-                          <Tag color="purple" style={{ borderRadius: 20, margin: 0, fontSize: 11 }}>
+                          <Tag
+                            color="purple"
+                            style={{ borderRadius: 20, margin: 0, fontSize: 11 }}
+                          >
                             {evaluation.evaluationNumber}
                           </Tag>
                         </div>
                       }
                       description={
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 2 }}>
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            flexWrap: 'wrap',
+                            marginTop: 2,
+                          }}
+                        >
                           {evaluation.studentName && (
                             <Text style={{ fontSize: 12, color: '#636E72' }}>
                               {evaluation.studentName}
                             </Text>
                           )}
-                          <span style={{ color: '#d1d5db', fontSize: 10 }}>•</span>
+                          {evaluation.studentName && (
+                            <span style={{ color: '#d1d5db', fontSize: 10 }}>•</span>
+                          )}
                           <Text style={{ fontSize: 12, color: '#b2bec3' }}>
                             {new Date(evaluation.date + 'T12:00:00').toLocaleDateString('pt-BR')}
                           </Text>
@@ -347,12 +377,7 @@ export default function DashboardPage() {
                     {action.label}
                   </span>
                   <RightOutlined
-                    style={{
-                      fontSize: 11,
-                      color: action.color,
-                      opacity: 0.5,
-                      marginLeft: 'auto',
-                    }}
+                    style={{ fontSize: 11, color: action.color, opacity: 0.5, marginLeft: 'auto' }}
                   />
                 </button>
               ))}

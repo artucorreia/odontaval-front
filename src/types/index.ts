@@ -99,3 +99,21 @@ export interface ApiResponse<T> {
   code: number;
   data: T;
 }
+
+export interface RecentEvaluation {
+  id: number;
+  title: string;
+  evaluationNumber: string;
+  grade: number;
+  studentName?: string;
+  specialismName?: string;
+  academicSemester: string;
+  date: string;
+}
+
+export interface DashboardStats {
+  totalStudents: number;
+  totalEvaluations: number;
+  evaluationsThisMonth: number;
+  recentEvaluations: RecentEvaluation[];
+}
