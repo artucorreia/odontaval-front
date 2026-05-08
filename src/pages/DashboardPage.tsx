@@ -3,12 +3,13 @@ import { Card, Col, Row, Typography, Button, Avatar, List, Spin, Tag, Alert } fr
 import {
   TeamOutlined,
   FileTextOutlined,
-  RightOutlined,
   UserOutlined,
   BarChartOutlined,
   FormOutlined,
   CalendarOutlined,
   ReloadOutlined,
+  ArrowRightOutlined,
+  RightOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -64,91 +65,36 @@ export default function DashboardPage() {
       label: 'Total de Alunos',
       value: stats?.totalStudents ?? '—',
       sub: 'cadastrados no sistema',
-      icon: <TeamOutlined style={{ fontSize: 20, color: '#6C5CE7' }} />,
-      iconBg: '#ede9fe',
-      accent: '#6C5CE7',
+      icon: <TeamOutlined style={{ fontSize: 18, color: '#6C5CE7' }} />,
     },
     {
       label: 'Avaliações Realizadas',
       value: stats?.totalEvaluations ?? '—',
       sub: 'em todos os semestres',
-      icon: <FileTextOutlined style={{ fontSize: 20, color: '#0984e3' }} />,
-      iconBg: '#dbeafe',
-      accent: '#0984e3',
+      icon: <FileTextOutlined style={{ fontSize: 18, color: '#6C5CE7' }} />,
     },
     {
       label: 'Avaliações este mês',
       value: stats?.evaluationsThisMonth ?? '—',
       sub: 'no mês corrente',
-      icon: <CalendarOutlined style={{ fontSize: 20, color: '#00b894' }} />,
-      iconBg: '#d1fae5',
-      accent: '#00b894',
+      icon: <CalendarOutlined style={{ fontSize: 18, color: '#6C5CE7' }} />,
     },
   ];
 
   const quickActions = [
-    {
-      label: 'Nova Avaliação',
-      icon: <FormOutlined />,
-      route: '/avaliacoes/nova',
-      bg: '#6C5CE7',
-      color: '#fff',
-    },
-    {
-      label: 'Gerenciar Alunos',
-      icon: <UserOutlined />,
-      route: '/alunos',
-      bg: '#f5f3ff',
-      color: '#6C5CE7',
-    },
-    {
-      label: 'Ver Relatórios',
-      icon: <BarChartOutlined />,
-      route: '/relatorios',
-      bg: '#f0f9ff',
-      color: '#0984e3',
-    },
+    { label: 'Nova Avaliação',    icon: <FormOutlined />,    route: '/avaliacoes/nova' },
+    { label: 'Gerenciar Alunos',  icon: <UserOutlined />,    route: '/alunos' },
+    { label: 'Ver Relatórios',    icon: <BarChartOutlined />, route: '/relatorios' },
   ];
 
   return (
     <div>
-      {/* ── Welcome banner ───────────────────────────────────────────── */}
-      <div
-        style={{
-          background: 'linear-gradient(135deg, #6C5CE7 0%, #a78bfa 100%)',
-          borderRadius: 16,
-          padding: '24px 32px',
-          marginBottom: 24,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 16,
-        }}
-      >
-        <div>
-          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', marginBottom: 4 }}>
-            {today}
-          </div>
-          <Title level={2} style={{ margin: 0, color: '#fff', fontWeight: 700 }}>
-            {greeting()}, {firstName}!
-          </Title>
-          <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 14 }}>
-            Aqui está um resumo do sistema
-          </Text>
-        </div>
-        <Avatar
-          size={64}
-          style={{
-            background: 'rgba(255,255,255,0.2)',
-            fontSize: 26,
-            fontWeight: 700,
-            color: '#fff',
-            flexShrink: 0,
-          }}
-        >
-          {firstName[0]?.toUpperCase()}
-        </Avatar>
+      {/* ── Header ───────────────────────────────────────────────────── */}
+      <div className="mb-5">
+        <Title level={2} style={{ margin: 0, fontWeight: 700, color: '#2D3436' }}>
+          {greeting()}, {firstName}!
+        </Title>
+        <Text style={{ color: '#636E72' }}>{today}</Text>
       </div>
 
       {error && (
@@ -175,46 +121,15 @@ export default function DashboardPage() {
             >
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                 <div>
-                  <Text
-                    style={{
-                      color: '#94a3b8',
-                      fontSize: 12,
-                      fontWeight: 600,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.04em',
-                    }}
-                  >
+                  <Text style={{ color: '#94a3b8', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                     {card.label}
                   </Text>
-                  <div
-                    style={{
-                      fontSize: 34,
-                      fontWeight: 800,
-                      color: loading ? '#d1d5db' : card.accent,
-                      lineHeight: 1.1,
-                      marginTop: 6,
-                      marginBottom: 4,
-                      minHeight: 42,
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
+                  <div style={{ fontSize: 26, fontWeight: 700, color: '#2D3436', lineHeight: 1.2, marginTop: 6, marginBottom: 4, minHeight: 36, display: 'flex', alignItems: 'center' }}>
                     {loading ? <Spin size="small" /> : card.value}
                   </div>
                   <Text style={{ color: '#b2bec3', fontSize: 12 }}>{card.sub}</Text>
                 </div>
-                <div
-                  style={{
-                    background: card.iconBg,
-                    borderRadius: 10,
-                    width: 44,
-                    height: 44,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                  }}
-                >
+                <div style={{ background: '#f5f3ff', borderRadius: 8, width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   {card.icon}
                 </div>
               </div>
@@ -341,7 +256,7 @@ export default function DashboardPage() {
             style={{ borderRadius: 12, border: '1px solid #f0f0f0', height: '100%' }}
             styles={{ body: { padding: '16px 20px' } }}
           >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {quickActions.map((action) => (
                 <button
                   key={action.label}
@@ -349,36 +264,26 @@ export default function DashboardPage() {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 12,
-                    background: action.bg,
-                    border: 'none',
-                    borderRadius: 10,
-                    padding: '14px 16px',
+                    gap: 10,
+                    background: '#fafafa',
+                    border: '1px solid #f0f0f0',
+                    borderRadius: 8,
+                    padding: '12px 14px',
                     cursor: 'pointer',
                     width: '100%',
                     textAlign: 'left',
-                    transition: 'filter 0.15s',
+                    transition: 'background 0.15s',
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.filter = 'brightness(0.96)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.filter = 'brightness(1)')}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = '#f5f3ff')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = '#fafafa')}
                 >
-                  <span
-                    style={{
-                      fontSize: 18,
-                      color: action.color,
-                      display: 'flex',
-                      alignItems: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
+                  <span style={{ fontSize: 15, color: '#6C5CE7', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
                     {action.icon}
                   </span>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: action.color }}>
+                  <span style={{ fontSize: 13.5, fontWeight: 500, color: '#2D3436' }}>
                     {action.label}
                   </span>
-                  <RightOutlined
-                    style={{ fontSize: 11, color: action.color, opacity: 0.5, marginLeft: 'auto' }}
-                  />
+                  <ArrowRightOutlined style={{ fontSize: 10, color: '#b2bec3', marginLeft: 'auto' }} />
                 </button>
               ))}
             </div>

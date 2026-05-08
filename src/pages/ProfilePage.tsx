@@ -7,7 +7,9 @@ import {
   EyeTwoTone,
   UserOutlined,
   LockOutlined,
+  ArrowLeftOutlined,
 } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { userService } from '../services/api';
 
@@ -66,7 +68,9 @@ function PasswordRequirements({ password }: { password: string }) {
 }
 
 export default function ProfilePage() {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, hasRole } = useAuth();
+  const navigate = useNavigate();
+  const isStudent = hasRole('STUDENT');
 
   const [profileForm] = Form.useForm();
   const [passwordForm] = Form.useForm();
@@ -138,11 +142,20 @@ export default function ProfilePage() {
 
   return (
     <div>
-      <div className="mb-5">
-        <Title level={2} style={{ margin: 0, fontWeight: 700, color: '#2D3436' }}>
-          Meu Perfil
-        </Title>
-        <Text style={{ color: '#636E72' }}>Gerencie suas informações pessoais e senha</Text>
+      <div className="flex items-center gap-3 mb-5">
+        {isStudent && (
+          <Button
+            type="text"
+            icon={<ArrowLeftOutlined />}
+            onClick={() => navigate('/alunos/me')}
+          />
+        )}
+        <div>
+          <Title level={2} style={{ margin: 0, fontWeight: 700, color: '#2D3436' }}>
+            Meu Perfil
+          </Title>
+          <Text style={{ color: '#636E72' }}>Gerencie suas informações pessoais e senha</Text>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
