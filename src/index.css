@@ -75,7 +75,7 @@ body {
 
 .stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(108, 92, 231, 0.12) !important;
+  box-shadow: 0 8px 24px rgba(108, 92, 231, 0.12);
 }
 
 .evaluation-score {

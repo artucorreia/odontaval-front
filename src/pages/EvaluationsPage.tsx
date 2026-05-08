@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Card,
   Button,
@@ -9,43 +9,89 @@ import {
   Tooltip,
   Popconfirm,
   message,
+  Alert,
+  Avatar,
 } from 'antd';
 import ResponsiveTable from '../components/ResponsiveTable';
 import {
   PlusOutlined,
   SearchOutlined,
+  DeleteOutlined,
   EyeOutlined,
   EditOutlined,
-  DeleteOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useNavigate } from 'react-router-dom';
-import { MOCK_EVALUATIONS } from '../utils/mockData';
+import { evaluationService } from '../services/api';
 import type { Evaluation } from '../types';
+import EvaluationDetailsModal from '../components/evaluations/EvaluationDetailsModal';
+import EvaluationEditModal from '../components/evaluations/EvaluationEditModal';
 
 const { Title, Text } = Typography;
 
-const conceptColor = (v: number) => {
-  if (v >= 9) return { bg: '#d1fae5', text: '#065f46' };
-  if (v >= 7) return { bg: '#fef3c7', text: '#92400e' };
+const gradeColor = (grade: number) => {
+  if (grade >= 7) return { bg: '#d1fae5', text: '#065f46' };
+  if (grade >= 5) return { bg: '#fef3c7', text: '#92400e' };
   return { bg: '#fee2e2', text: '#991b1b' };
 };
 
+function studentInitials(name?: string) {
+  if (!name) return '?';
+  return name.split(' ').slice(0, 2).map((n) => n[0]).join('').toUpperCase();
+}
+
 export default function EvaluationsPage() {
   const [search, setSearch] = useState('');
-  const [evaluations, setEvaluations] = useState<Evaluation[]>(MOCK_EVALUATIONS);
+  const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [detailsEval, setDetailsEval] = useState<Evaluation | null>(null);
+  const [editEval, setEditEval] = useState<Evaluation | null>(null);
+
   const navigate = useNavigate();
 
-  const filtered = evaluations.filter(
-    (e) =>
-      e.student?.name.toLowerCase().includes(search.toLowerCase()) ||
-      e.exam?.title?.toLowerCase().includes(search.toLowerCase()) ||
-      e.exam?.specialism?.name.toLowerCase().includes(search.toLowerCase()),
-  );
+  const fetchEvaluations = () => {
+    setLoading(true);
+    setError(null);
+    evaluationService
+      .findAll()
+      .then((res) => {
+        setEvaluations(res.data?.data ?? []);
+      })
+      .catch(() => setError('Não foi possível carregar as avaliações. Verifique a conexão com o servidor.'))
+      .finally(() => setLoading(false));
+  };
 
-  const handleDelete = (id: number) => {
-    setEvaluations(evaluations.filter((e) => e.id !== id));
-    message.success('Avaliação removida com sucesso!');
+  useEffect(() => {
+    fetchEvaluations();
+  }, []);
+
+  const filtered = evaluations.filter((e) => {
+    const q = search.toLowerCase();
+    return (
+      e.title.toLowerCase().includes(q) ||
+      e.evaluationNumber.toLowerCase().includes(q) ||
+      e.academicSemester.toLowerCase().includes(q) ||
+      e.procedurePerformed.toLowerCase().includes(q) ||
+      (e.studentName ?? '').toLowerCase().includes(q) ||
+      (e.studentEmail ?? '').toLowerCase().includes(q)
+    );
+  });
+
+  const handleDelete = async (id: number) => {
+    try {
+      await evaluationService.delete(id);
+      setEvaluations((prev) => prev.filter((e) => e.id !== id));
+      message.success('Avaliação removida com sucesso!');
+    } catch {
+      message.error('Não foi possível remover a avaliação.');
+    }
+  };
+
+  const handleSaved = (updated: Evaluation) => {
+    setEvaluations((prev) => prev.map((e) => (e.id === updated.id ? updated : e)));
   };
 
   const columns: ColumnsType<Evaluation> = [
@@ -53,45 +99,77 @@ export default function EvaluationsPage() {
       title: 'Aluno',
       key: 'student',
       render: (_, r) => (
-        <div>
-          <div className="font-semibold text-secondary text-sm">{r.student?.name ?? '—'}</div>
-          <div className="text-xs text-muted">{r.student?.email}</div>
+        <div className="flex items-center gap-2">
+          <Avatar style={{ background: '#6C5CE7', fontWeight: 600, flexShrink: 0 }} size={32}>
+            {studentInitials(r.studentName)}
+          </Avatar>
+          <div>
+            <div className="font-semibold text-secondary" style={{ fontSize: 13 }}>
+              {r.studentName ?? r.studentId}
+            </div>
+            {r.studentEmail && (
+              <div style={{ fontSize: 11, color: '#636E72' }}>{r.studentEmail}</div>
+            )}
+          </div>
         </div>
       ),
     },
     {
-      title: 'Especialidade',
-      key: 'specialism',
+      title: 'Avaliação',
+      key: 'title',
       render: (_, r) => (
-        <Tag
-          style={{
-            borderRadius: 20,
-            background: '#ede9fe',
-            color: '#6C5CE7',
-            borderColor: '#c4b5fd',
-          }}
-        >
-          {r.exam?.specialism?.name ?? '—'}
+        <div>
+          <div className="font-semibold text-secondary" style={{ fontSize: 13 }}>
+            {r.title}
+          </div>
+          <div style={{ fontSize: 11, color: '#636E72' }}>{r.procedurePerformed}</div>
+        </div>
+      ),
+    },
+    {
+      title: 'Período',
+      key: 'evaluationNumber',
+      width: 90,
+      render: (_, r) => (
+        <Tag color="purple" style={{ borderRadius: 20 }}>
+          {r.evaluationNumber}
         </Tag>
       ),
     },
     {
-      title: 'Exame',
-      key: 'exam',
-      render: (_, r) => <Text style={{ fontSize: 13 }}>{r.exam?.title ?? '—'}</Text>,
+      title: 'Semestre',
+      key: 'academicSemester',
+      responsive: ['md'],
+      render: (_, r) => <Text style={{ fontSize: 13 }}>{r.academicSemester}</Text>,
     },
     {
       title: 'Data',
       key: 'date',
-      render: (_, r) => (r.exam?.date ? new Date(r.exam.date).toLocaleDateString('pt-BR') : '—'),
+      responsive: ['lg'],
+      render: (_, r) =>
+        r.date ? new Date(r.date + 'T12:00:00').toLocaleDateString('pt-BR') : '—',
     },
     {
-      title: 'Conceito',
-      key: 'concept',
+      title: 'Especialidade',
+      key: 'specialism',
+      responsive: ['lg'],
+      render: (_, r) =>
+        r.specialismName ? (
+          <Tag color="blue" style={{ borderRadius: 20 }}>
+            {r.specialismName}
+          </Tag>
+        ) : (
+          <Text style={{ fontSize: 12, color: '#b2bec3' }}>—</Text>
+        ),
+    },
+    {
+      title: 'Nota',
+      key: 'grade',
       align: 'center',
-      sorter: (a, b) => a.concept - b.concept,
+      width: 80,
+      sorter: (a, b) => a.grade - b.grade,
       render: (_, r) => {
-        const { bg, text } = conceptColor(r.concept);
+        const { bg, text } = gradeColor(r.grade);
         return (
           <span
             style={{
@@ -99,49 +177,52 @@ export default function EvaluationsPage() {
               color: text,
               borderRadius: 20,
               padding: '2px 12px',
-              fontWeight: 600,
+              fontWeight: 700,
               fontSize: 13,
             }}
           >
-            {r.concept.toFixed(1)}
+            {r.grade.toFixed(1)}
           </span>
         );
       },
     },
     {
-      title: 'Professor',
-      key: 'professor',
-      render: (_, r) => <Text style={{ fontSize: 13 }}>{r.exam?.professor?.name ?? '—'}</Text>,
-    },
-    {
       title: 'Ações',
       key: 'actions',
       align: 'right',
+      width: 120,
       render: (_, record) => (
-        <Space>
+        <Space size={2}>
           <Tooltip title="Ver detalhes">
             <Button
               type="text"
+              size="small"
               icon={<EyeOutlined style={{ color: '#6C5CE7' }} />}
-              onClick={() => navigate(`/avaliacoes/${record.id}`)}
+              onClick={() => setDetailsEval(record)}
             />
           </Tooltip>
           <Tooltip title="Editar">
             <Button
               type="text"
-              icon={<EditOutlined style={{ color: '#636E72' }} />}
-              onClick={() => navigate(`/avaliacoes/${record.id}/editar`)}
+              size="small"
+              icon={<EditOutlined style={{ color: '#0984e3' }} />}
+              onClick={() => setEditEval(record)}
             />
           </Tooltip>
           <Tooltip title="Remover">
             <Popconfirm
               title="Remover avaliação?"
+              description="Esta ação não pode ser desfeita."
               onConfirm={() => handleDelete(record.id)}
               okText="Remover"
               cancelText="Cancelar"
               okButtonProps={{ danger: true }}
             >
-              <Button type="text" icon={<DeleteOutlined style={{ color: '#E17055' }} />} />
+              <Button
+                type="text"
+                size="small"
+                icon={<DeleteOutlined style={{ color: '#E17055' }} />}
+              />
             </Popconfirm>
           </Tooltip>
         </Space>
@@ -168,24 +249,53 @@ export default function EvaluationsPage() {
         </Button>
       </div>
 
+      {error && (
+        <Alert
+          type="error"
+          message={error}
+          action={
+            <Button size="small" icon={<ReloadOutlined />} onClick={fetchEvaluations}>
+              Tentar novamente
+            </Button>
+          }
+          style={{ marginBottom: 16 }}
+          showIcon
+        />
+      )}
+
       <Card style={{ borderRadius: 12, border: '1px solid #f0f0f0' }}>
         <div className="mb-4">
           <Input
-            placeholder="Buscar por aluno, exame ou especialidade..."
+            placeholder="Buscar por aluno, título, período, semestre ou procedimento..."
             prefix={<SearchOutlined style={{ color: '#636E72' }} />}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{ maxWidth: 400, borderRadius: 8 }}
+            style={{ maxWidth: 480, borderRadius: 8 }}
+            disabled={!!error}
           />
         </div>
         <ResponsiveTable
           columns={columns}
           dataSource={filtered}
           rowKey="id"
+          loading={loading}
           pagination={{ pageSize: 10, showSizeChanger: false }}
           locale={{ emptyText: 'Nenhuma avaliação encontrada' }}
         />
       </Card>
+
+      <EvaluationDetailsModal
+        evaluation={detailsEval}
+        open={!!detailsEval}
+        onClose={() => setDetailsEval(null)}
+      />
+
+      <EvaluationEditModal
+        evaluation={editEval}
+        open={!!editEval}
+        onClose={() => setEditEval(null)}
+        onSaved={handleSaved}
+      />
     </div>
   );
 }

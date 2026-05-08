@@ -69,8 +69,8 @@ export default function SemesterEvaluationsChart({ data }: Props) {
             <Line
               yAxisId="right"
               type="monotone"
-              dataKey="avgConcept"
-              name="Média do Conceito"
+              dataKey="avgGrade"
+              name="Média da Nota"
               stroke="#00B894"
               strokeWidth={2.5}
               dot={{ r: 4, fill: '#00B894' }}

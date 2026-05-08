@@ -1,3 +1,5 @@
+export type RoleName = 'ADMIN' | 'PROFESSOR' | 'STUDENT';
+
 export interface User {
   id: string;
   name: string;
@@ -8,7 +10,7 @@ export interface User {
 
 export interface Role {
   id: number;
-  name: 'ADMIN' | 'PROFESSOR' | 'STUDENT';
+  name: RoleName;
 }
 
 export interface Specialism {
@@ -18,47 +20,77 @@ export interface Specialism {
   createdAt?: string;
 }
 
-export interface Exam {
-  id: number;
-  title: string;
-  date: string;
-  academicSemester: string;
-  goals: string;
-  serviceUnit: string;
-  procedurePerformed: string;
-  professorId: string;
-  specialismId: number;
-  specialism?: Specialism;
-  professor?: User;
-  createdAt?: string;
-}
-
 export interface Evaluation {
   id: number;
+  title: string;
   punctuality: number;
   instrumental: number;
-  organizationOfServiceUnit: number;
+  boxOrganization: number;
   biosecurity: number;
   ethics: number;
   concept: number;
+  grade: number;
   observations?: string;
+  evaluationNumber: string;
+  date: string;
+  academicSemester: string;
+  goals: string;
+  box: string;
+  procedurePerformed: string;
+  professorId: string;
+  professorName?: string;
   studentId: string;
-  examId: number;
-  student?: User;
-  exam?: Exam;
-  createdAt?: string;
+  studentName?: string;
+  studentEmail?: string;
+  specialismId: number;
+  specialismName?: string;
 }
 
-export interface AuthResponse {
+export interface CreateEvaluationRequest {
+  title: string;
+  punctuality: number;
+  instrumental: number;
+  boxOrganization: number;
+  biosecurity: number;
+  ethics: number;
+  concept: number;
+  grade: number;
+  observations?: string;
+  evaluationNumber: string;
+  date: string;
+  academicSemester: string;
+  goals: string;
+  box: string;
+  procedurePerformed: string;
+  studentId: string;
+  specialismId: number;
+}
+
+export interface UpdateEvaluationRequest {
+  title?: string;
+  punctuality?: number;
+  instrumental?: number;
+  boxOrganization?: number;
+  biosecurity?: number;
+  ethics?: number;
+  concept?: number;
+  grade?: number;
+  observations?: string;
+  evaluationNumber?: string;
+  date?: string;
+  academicSemester?: string;
+  goals?: string;
+  box?: string;
+  procedurePerformed?: string;
+}
+
+export interface AuthLoginResponse {
   success: boolean;
   code: number;
   data: {
     userId: string;
+    userRole: RoleName;
     token: string;
-    role: {
-      id: number;
-      name: string;
-    };
   };
 }
 
@@ -68,11 +100,20 @@ export interface ApiResponse<T> {
   data: T;
 }
 
-export interface PaginatedResponse<T> {
-  success: boolean;
-  code: number;
-  data: T[];
-  total?: number;
-  page?: number;
-  pageSize?: number;
+export interface RecentEvaluation {
+  id: number;
+  title: string;
+  evaluationNumber: string;
+  grade: number;
+  studentName?: string;
+  specialismName?: string;
+  academicSemester: string;
+  date: string;
+}
+
+export interface DashboardStats {
+  totalStudents: number;
+  totalEvaluations: number;
+  evaluationsThisMonth: number;
+  recentEvaluations: RecentEvaluation[];
 }

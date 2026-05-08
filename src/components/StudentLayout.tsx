@@ -1,5 +1,5 @@
 import { Layout, Avatar, Dropdown, Typography } from 'antd';
-import { LogoutOutlined } from '@ant-design/icons';
+import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import LogoWhite from '../assets/logo-white.svg';
@@ -64,9 +64,14 @@ export default function StudentLayout() {
 
         <Dropdown
           menu={{
-            items: [{ key: 'logout', icon: <LogoutOutlined />, label: 'Sair', danger: true }],
+            items: [
+              { key: 'profile', icon: <UserOutlined />, label: 'Meu Perfil' },
+              { type: 'divider' as const },
+              { key: 'logout', icon: <LogoutOutlined />, label: 'Sair', danger: true },
+            ],
             onClick: ({ key }) => {
               if (key === 'logout') handleLogout();
+              else if (key === 'profile') navigate('/alunos/me/perfil');
             },
           }}
           placement="bottomRight"

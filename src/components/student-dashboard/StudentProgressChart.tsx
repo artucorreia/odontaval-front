@@ -1,7 +1,5 @@
 import { Card, Empty } from 'antd';
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -53,7 +51,7 @@ function CustomTooltip({
 export default function StudentProgressChart({ data }: Props) {
   return (
     <Card
-      title={<span className="font-semibold">Evolução do Conceito Final</span>}
+      title={<span className="font-semibold">Evolução de Nota</span>}
       style={{ borderRadius: 12, border: '1px solid #f0f0f0' }}
     >
       {data.length === 0 ? (
@@ -85,7 +83,7 @@ export default function StudentProgressChart({ data }: Props) {
             <ReferenceLine y={7} stroke="#FDCB6E" strokeDasharray="4 4" strokeWidth={1.5} />
             <Area
               type="monotone"
-              dataKey="concept"
+              dataKey="grade"
               stroke="#6C5CE7"
               strokeWidth={2.5}
               fill="url(#conceptGradient)"

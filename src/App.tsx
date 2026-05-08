@@ -8,13 +8,14 @@ import StudentRoute from './components/StudentRoute';
 import AppLayout from './components/AppLayout';
 import StudentLayout from './components/StudentLayout';
 import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import StudentsPage from './pages/StudentsPage';
 import StudentDetailPage from './pages/StudentDetailPage';
-import ExamsPage from './pages/ExamsPage';
-import ExamDetailPage from './pages/ExamDetailPage';
-import AgendaPage from './pages/AgendaPage';
+import EvaluationsPage from './pages/EvaluationsPage';
+import NewEvaluationPage from './pages/NewEvaluationPage';
 import ReportsPage from './pages/ReportsPage';
+import ProfilePage from './pages/ProfilePage';
 
 const theme = {
   token: {
@@ -33,8 +34,9 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
 
-            {/* Professor area — full layout, blocked for ALUNO */}
+            {/* Professor area — full layout, blocked for STUDENT */}
             <Route
               path="/"
               element={
@@ -49,10 +51,10 @@ export default function App() {
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="alunos" element={<StudentsPage />} />
               <Route path="alunos/:id" element={<StudentDetailPage />} />
-              <Route path="exames" element={<ExamsPage />} />
-              <Route path="exames/:id" element={<ExamDetailPage />} />
-              <Route path="agenda" element={<AgendaPage />} />
+              <Route path="avaliacoes" element={<EvaluationsPage />} />
+              <Route path="avaliacoes/nova" element={<NewEvaluationPage />} />
               <Route path="relatorios" element={<ReportsPage />} />
+              <Route path="perfil" element={<ProfilePage />} />
             </Route>
 
             {/* Student area — minimal layout, blocked for PROFESSOR */}
@@ -67,6 +69,7 @@ export default function App() {
               }
             >
               <Route index element={<StudentDetailPage />} />
+              <Route path="perfil" element={<ProfilePage />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
