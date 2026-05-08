@@ -51,7 +51,7 @@ function CustomTooltip({
 export default function StudentProgressChart({ data }: Props) {
   return (
     <Card
-      title={<span className="font-semibold">Evolução do Conceito Final</span>}
+      title={<span className="font-semibold">Evolução de Nota</span>}
       style={{ borderRadius: 12, border: '1px solid #f0f0f0' }}
     >
       {data.length === 0 ? (

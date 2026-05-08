@@ -37,9 +37,9 @@ function penaltyBarColor(penalty: number) {
 }
 
 function gradeTheme(grade: number) {
-  if (grade >= 7) return { bg: '#ecfdf5', ring: '#10b981', text: '#065f46', label: 'Aprovado' };
-  if (grade >= 5) return { bg: '#fffbeb', ring: '#f59e0b', text: '#92400e', label: 'Regular' };
-  return { bg: '#fef2f2', ring: '#ef4444', text: '#991b1b', label: 'Reprovado' };
+  if (grade >= 7) return { bg: '#ecfdf5', ring: '#10b981', text: '#065f46' };
+  if (grade >= 5) return { bg: '#fffbeb', ring: '#f59e0b', text: '#92400e' };
+  return { bg: '#fef2f2', ring: '#ef4444', text: '#991b1b' };
 }
 
 function initials(name?: string) {
@@ -224,9 +224,6 @@ export default function EvaluationDetailsModal({ evaluation, open, onClose }: Pr
             <span style={{ fontSize: 24, fontWeight: 800, color: theme.text, lineHeight: 1 }}>
               {evaluation.grade.toFixed(1)}
             </span>
-          </div>
-          <div style={{ fontSize: 11, color: theme.text, fontWeight: 600, marginTop: 5 }}>
-            {theme.label}
           </div>
         </div>
       </div>

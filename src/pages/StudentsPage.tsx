@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Card, Button, Input, Typography, Tag, Avatar, Tooltip, Alert } from 'antd';
+import { Card, Button, Input, Typography, Avatar, Tooltip, Alert } from 'antd';
 import ResponsiveTable from '../components/ResponsiveTable';
 import { SearchOutlined, EyeOutlined, ReloadOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
@@ -59,13 +59,6 @@ export default function StudentsPage() {
             <div className="text-xs text-muted">{record.email}</div>
           </div>
         </div>
-      ),
-    },
-    {
-      title: 'Perfil',
-      key: 'role',
-      render: (_, record) => (
-        <Tag className="tag-role-aluno rounded-full">{record.roles[0]?.name}</Tag>
       ),
     },
     {
