@@ -2,6 +2,7 @@ import axios from 'axios';
 import type { AdminCreateUserRequest, ApiResponse, AuthLoginResponse, CreateEvaluationRequest, DashboardStats, UpdateEvaluationRequest, UpdateRoleRequest } from '../types';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
+const API_KEY = import.meta.env.VITE_API_KEY as string;
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -9,6 +10,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
+  config.headers['x-api-key'] = API_KEY;
   if (!config.url?.startsWith('/api/auth/')) {
     const token = localStorage.getItem('token');
     if (token) {
