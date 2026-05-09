@@ -10,6 +10,7 @@ import {
   ReloadOutlined,
   ArrowRightOutlined,
   RightOutlined,
+  StarOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -38,6 +39,9 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const isAdmin = user?.roles?.some((r) => r.name === 'ADMIN') ?? false;
+  const evaluationsRoute = isAdmin ? '/admin/avaliacoes' : '/avaliacoes';
 
   const firstName = user?.name?.split(' ')[0] ?? 'Usuário';
   const today = new Date().toLocaleDateString('pt-BR', {
@@ -81,11 +85,18 @@ export default function DashboardPage() {
     },
   ];
 
-  const quickActions = [
-    { label: 'Nova Avaliação',    icon: <FormOutlined />,    route: '/avaliacoes/nova' },
-    { label: 'Gerenciar Alunos',  icon: <UserOutlined />,    route: '/alunos' },
-    { label: 'Ver Relatórios',    icon: <BarChartOutlined />, route: '/relatorios' },
-  ];
+  const quickActions = isAdmin
+    ? [
+        { label: 'Gerenciar Usuários',      icon: <TeamOutlined />,    route: '/admin/usuarios' },
+        { label: 'Gerenciar Especialidades', icon: <StarOutlined />,    route: '/admin/especialidades' },
+        { label: 'Ver Avaliações',           icon: <FileTextOutlined />, route: '/admin/avaliacoes' },
+        { label: 'Ver Relatórios',           icon: <BarChartOutlined />, route: '/admin/relatorios' },
+      ]
+    : [
+        { label: 'Nova Avaliação',   icon: <FormOutlined />,    route: '/avaliacoes/nova' },
+        { label: 'Gerenciar Alunos', icon: <UserOutlined />,    route: '/alunos' },
+        { label: 'Ver Relatórios',   icon: <BarChartOutlined />, route: '/relatorios' },
+      ];
 
   return (
     <div>
@@ -150,7 +161,7 @@ export default function DashboardPage() {
                 type="link"
                 size="small"
                 style={{ color: '#6C5CE7', padding: 0 }}
-                onClick={() => navigate('/avaliacoes')}
+                onClick={() => navigate(evaluationsRoute)}
               >
                 Ver todas <RightOutlined />
               </Button>
@@ -177,7 +188,7 @@ export default function DashboardPage() {
                     }}
                     onMouseEnter={(e) => (e.currentTarget.style.background = '#fafafa')}
                     onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                    onClick={() => navigate('/avaliacoes')}
+                    onClick={() => navigate(evaluationsRoute)}
                   >
                     <List.Item.Meta
                       avatar={

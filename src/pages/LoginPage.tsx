@@ -42,6 +42,8 @@ export default function LoginPage() {
       message.success('Login realizado com sucesso!');
       if (userRole === 'STUDENT') {
         navigate('/alunos/me');
+      } else if (userRole === 'ADMIN') {
+        navigate('/admin/dashboard');
       } else {
         navigate('/dashboard');
       }

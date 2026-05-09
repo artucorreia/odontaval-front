@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { Spin } from 'antd';
 import { useAuth } from '../contexts/AuthContext';
 
-export default function ProfessorRoute({ children }: { children: React.ReactNode }) {
+export default function AdminRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, hasRole } = useAuth();
 
   if (isLoading) {
@@ -15,9 +15,7 @@ export default function ProfessorRoute({ children }: { children: React.ReactNode
   }
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-
-  if (hasRole('ADMIN')) return <Navigate to="/admin/dashboard" replace />;
-  if (!hasRole('PROFESSOR')) return <Navigate to="/alunos/me" replace />;
+  if (!hasRole('ADMIN')) return <Navigate to="/dashboard" replace />;
 
   return <>{children}</>;
 }
