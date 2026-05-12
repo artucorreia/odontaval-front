@@ -11,6 +11,8 @@ import AdminLayout from './components/AdminLayout';
 import StudentLayout from './components/StudentLayout';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
+import ConfirmEmailPage from './pages/ConfirmEmailPage';
 import DashboardPage from './pages/DashboardPage';
 import StudentsPage from './pages/StudentsPage';
 import StudentDetailPage from './pages/StudentDetailPage';
@@ -40,6 +42,8 @@ export default function App() {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/confirm-email" element={<ConfirmEmailPage />} />
 
             {/* Admin area — exclusive for ADMIN role */}
             <Route

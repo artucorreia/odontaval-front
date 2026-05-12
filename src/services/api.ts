@@ -38,6 +38,12 @@ export const authService = {
     api.post<AuthLoginResponse>('/api/auth/login', { email, password }),
   register: (name: string, email: string, password: string) =>
     api.post('/api/auth/register', { name, email, password }),
+  passwordRecovery: (email: string) =>
+    api.post('/api/auth/password-recovery', { email }),
+  resetPassword: (userId: string, recoveryToken: string, newPassword: string) =>
+    api.post('/api/auth/reset-password', { userId, recoveryToken, newPassword }),
+  confirmEmail: (userId: string, confirmToken: string) =>
+    api.post('/api/auth/confirm-email', { userId, confirmToken }),
 };
 
 export const specialismService = {
