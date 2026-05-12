@@ -105,12 +105,15 @@ export default function StudentDetailPage() {
 
   const hasEvaluations = filteredStudentEvals.length > 0;
 
+  const listHref = window.location.pathname.startsWith('/admin') ? '/admin/usuarios' : '/alunos';
+  const listLabel = window.location.pathname.startsWith('/admin') ? 'Usuários' : 'Alunos';
+
   return (
     <div>
       {!isSelfView && (
         <Breadcrumb
           items={[
-            { title: <a onClick={() => navigate('/alunos')}>Alunos</a> },
+            { title: <a onClick={() => navigate(listHref)}>{listLabel}</a> },
             { title: student?.name ?? 'Detalhes' },
           ]}
           style={{ marginBottom: 16 }}

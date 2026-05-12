@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Form, Input, Button, Checkbox, message } from 'antd';
-import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
+import { Form, Input, Button, Checkbox, message, Modal } from 'antd';
+import { CheckCircleFilled, EyeInvisibleOutlined, EyeTwoTone, MailOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { authService, userService } from '../services/api';
@@ -9,8 +9,32 @@ import LogoWhite from '../assets/logo-white.svg';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
+  const [forgotForm] = Form.useForm();
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  const handleForgotClose = () => {
+    setForgotOpen(false);
+    setForgotSent(false);
+    forgotForm.resetFields();
+  };
+
+  const handleForgotSubmit = async (values: { email: string }) => {
+    setForgotLoading(true);
+    try {
+      await authService.passwordRecovery(values.email.trim());
+      setForgotSent(true);
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string } } };
+      const msg = axiosErr?.response?.data?.message ?? 'Erro ao enviar e-mail. Tente novamente.';
+      message.error(msg);
+    } finally {
+      setForgotLoading(false);
+    }
+  };
 
   const onFinish = async (values: { email: string; password: string }) => {
     setLoading(true);
@@ -42,6 +66,8 @@ export default function LoginPage() {
       message.success('Login realizado com sucesso!');
       if (userRole === 'STUDENT') {
         navigate('/alunos/me');
+      } else if (userRole === 'ADMIN') {
+        navigate('/admin/dashboard');
       } else {
         navigate('/dashboard');
       }
@@ -105,9 +131,14 @@ export default function LoginPage() {
                     <span className="text-sm text-muted">Lembrar-me</span>
                   </Checkbox>
                 </Form.Item>
-                <a href="#" className="text-sm text-primary hover:text-primary-dark">
+                <button
+                  type="button"
+                  onClick={() => setForgotOpen(true)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                  className="text-sm text-primary hover:text-primary-dark"
+                >
                   Esqueci minha senha
-                </a>
+                </button>
               </div>
 
               <Button
@@ -139,6 +170,70 @@ export default function LoginPage() {
           © 2025 ODONTAVAL. Todos os direitos reservados.
         </p>
       </div>
+
+      <Modal
+        open={forgotOpen}
+        onCancel={handleForgotClose}
+        footer={null}
+        centered
+        width={420}
+        title={
+          <span className="text-base font-semibold text-secondary">Recuperar senha</span>
+        }
+      >
+        {forgotSent ? (
+          <div className="py-6 text-center">
+            <CheckCircleFilled style={{ fontSize: 48, color: '#00B894' }} />
+            <h3 className="text-base font-semibold text-secondary mt-4 mb-2">
+              E-mail enviado!
+            </h3>
+            <p className="text-sm text-muted mb-6">
+              Enviamos um link de recuperação para o seu e-mail. Verifique sua caixa de entrada e a pasta de spam.
+            </p>
+            <Button
+              type="primary"
+              block
+              onClick={handleForgotClose}
+              className="h-10 rounded-lg font-semibold"
+              style={{ background: '#6C5CE7', borderColor: '#6C5CE7' }}
+            >
+              Fechar
+            </Button>
+          </div>
+        ) : (
+          <>
+            <p className="text-sm text-muted mb-5 mt-1">
+              Informe o e-mail cadastrado e enviaremos um link para redefinir sua senha.
+            </p>
+            <Form layout="vertical" form={forgotForm} onFinish={handleForgotSubmit} size="large">
+              <Form.Item
+                label={<span className="text-sm font-medium text-secondary">E-mail</span>}
+                name="email"
+                rules={[
+                  { required: true, message: 'Informe seu e-mail' },
+                  { type: 'email', message: 'E-mail inválido' },
+                ]}
+              >
+                <Input
+                  prefix={<MailOutlined className="text-muted" />}
+                  placeholder="seu@email.com"
+                  className="rounded-lg"
+                />
+              </Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                block
+                loading={forgotLoading}
+                className="h-10 rounded-lg font-semibold"
+                style={{ background: '#6C5CE7', borderColor: '#6C5CE7' }}
+              >
+                Enviar link de recuperação
+              </Button>
+            </Form>
+          </>
+        )}
+      </Modal>
     </div>
   );
 }

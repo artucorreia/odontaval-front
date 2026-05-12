@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
         },
       },
+      allowedHosts: ['d340-2804-29b8-511b-cbae-89c-c4d7-14bd-ccec.ngrok-free.app']
     },
   };
 });

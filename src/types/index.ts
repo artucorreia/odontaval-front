@@ -6,6 +6,7 @@ export interface User {
   email: string;
   roles: Role[];
   createdAt?: string;
+  deleted?: boolean;
 }
 
 export interface Role {
@@ -18,6 +19,8 @@ export interface Specialism {
   name: string;
   description?: string;
   createdAt?: string;
+  deleted?: boolean;
+  deletedAt?: string;
 }
 
 export interface Evaluation {
@@ -44,6 +47,8 @@ export interface Evaluation {
   studentEmail?: string;
   specialismId: number;
   specialismName?: string;
+  deleted?: boolean;
+  deletedAt?: string;
 }
 
 export interface CreateEvaluationRequest {
@@ -109,6 +114,17 @@ export interface RecentEvaluation {
   specialismName?: string;
   academicSemester: string;
   date: string;
+}
+
+export interface AdminCreateUserRequest {
+  name: string;
+  email: string;
+  password: string;
+  role: RoleName;
+}
+
+export interface UpdateRoleRequest {
+  role: RoleName;
 }
 
 export interface DashboardStats {
