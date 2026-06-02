@@ -6,13 +6,14 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     server: {
+      port: env.VITE_SERVER_PORT ? parseInt(env.VITE_SERVER_PORT) : 3000,
       proxy: {
         '/api': {
           target: env.VITE_API_BASE_URL,
           changeOrigin: true,
         },
       },
-      allowedHosts: ['d340-2804-29b8-511b-cbae-89c-c4d7-14bd-ccec.ngrok-free.app']
+      allowedHosts: env.VITE_ALLOWED_HOSTS ? env.VITE_ALLOWED_HOSTS.split(',') : []
     },
   };
 });
